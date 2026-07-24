@@ -42,11 +42,13 @@ export function extractNumber(copy: string): string | undefined {
 
 const RE = {
   question: /\?\s*$/m,
-  myth: /\b(mito|si dice|molti credono|falso[:!]|in realta|non e vero|pensi che|passa da sola)\b/i,
+  myth: /\b(mito|si dice|molti credono|ti raccontano|come (?:spesso )?ti dicono|falso[:!]|in realta|non e vero|pensi che|(?:non )?passa\b.{0,16}\bda sola|riposo e pazienza|stanno (?:solo )?rimandando)\b/i,
   founder: /\b(dott\.?|dottor|dottoressa|sono il fondatore|mi chiamo|dal (?:19|20)\d\d|fondatore)\b/i,
   guarantee: /\b(garanzia|garantit|soddisfatti o rimborsati|rimborso|senza rischi)\b/i,
   urgency: /\b(ultimi posti|posti limitati|solo (?:fino|per)|scade|entro il|affrettati|termina|ancora \d+ post)/i,
-  offer: /\b(sconto|offerta|promo|risparmia|€\s*\d|\bgratis\b|gratuit)/i,
+  // Promo VERA: richiede sconto/prezzo/%. La "consulenza gratuita" e la CTA di
+  // ogni lead-gen, non un archetipo Offerta: non deve attivare il 17.
+  offer: /\b(sconto|offerta|promo|risparmia|prezzo|€\s*\d|\d+\s*€|\d+\s*%)/i,
   comparison: /\b(vs\.?|contro|a differenza di|rispetto a|invece di|noi vs)\b/i,
   rating: /★|\bstelle\b|\b\d[.,]\d\s*(?:su|\/)\s*5\b|\b\d[\d.]*\s*(?:recensioni|valutazioni)\b/i,
   listicle: /(^|\n)\s*(?:\d+[.\)]|[-•])\s+/,
@@ -61,15 +63,26 @@ function lineMatching(copy: string, re: RegExp): string | undefined {
   return line || undefined;
 }
 
+// Una quote conta come TESTIMONIANZA solo se somiglia al parlato di un cliente:
+// abbastanza lunga OPPURE in prima persona. Esclude i frammenti retorici
+// (es. "un dolore come gli altri" dentro "non e un dolore come gli altri").
+function isTestimonialQuote(quote?: string): boolean {
+  if (!quote) return false;
+  const flat = deaccent(quote);
+  return quote.length >= 30 || /\b(mi|ho|sono|non mi|mia|mio|avevo|ero)\b/i.test(flat);
+}
+
 export function extractSignals(copy: string): Signals {
   const flat = deaccent(copy);
   const quote = extractQuote(copy);
+  const mythMatch = flat.match(RE.myth);
   return {
-    hasQuote: !!quote,
+    hasQuote: isTestimonialQuote(quote),
     quote,
     number: extractNumber(copy),
     isQuestion: RE.question.test(copy),
-    hasMyth: RE.myth.test(flat),
+    hasMyth: !!mythMatch,
+    mythLine: mythMatch ? lineMatching(copy, RE.myth) : undefined,
     hasFounder: RE.founder.test(flat),
     founderLine: RE.founder.test(flat) ? lineMatching(copy, RE.founder) : undefined,
     hasGuarantee: RE.guarantee.test(flat),
@@ -107,7 +120,7 @@ function extractObjection(copy: string): string | undefined {
 export function extractAttackPoints(copy: string, signals: Signals): AttackPoints {
   return {
     headline: extractHeadline(copy),
-    quote: signals.quote,
+    quote: signals.hasQuote ? signals.quote : undefined,
     proof: signals.number,
     benefit: extractBenefit(copy),
     objection: extractObjection(copy),

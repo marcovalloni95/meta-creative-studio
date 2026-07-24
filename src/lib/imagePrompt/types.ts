@@ -46,6 +46,7 @@ export type Signals = {
   number?: string; // il numero di prova piu rilevante
   isQuestion: boolean;
   hasMyth: boolean;
+  mythLine?: string;
   hasFounder: boolean;
   founderLine?: string;
   hasGuarantee: boolean;

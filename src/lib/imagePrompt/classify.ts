@@ -42,10 +42,9 @@ export function scoreArchetypes(signals: Signals): Scored[] {
   // Offerta & conversione (Famiglia E)
   if (s.hasUrgency) add("19", 8, "il copy leva su urgenza/scarsita reale");
   if (s.hasGuarantee) add("18", 8, "il copy offre una garanzia che abbatte il rischio");
-  if (s.hasOffer && !s.number) add("17", 6, "il copy presenta un'offerta/promo concreta");
-  // se c'e sia % che parole d'offerta, e piu offerta che statistica
-  if (s.hasOffer && s.offerLine && /sconto|€|gratis|gratuit|promo/i.test(s.offerLine))
-    add("17", 7, "il copy presenta un'offerta/promo concreta");
+  // hasOffer = promo vera (sconto/prezzo/%): la consulenza gratuita e la CTA
+  // di ogni lead-gen, non attiva l'archetipo Offerta.
+  if (s.hasOffer) add("17", 7, "il copy presenta un'offerta/promo concreta");
 
   // Messaggio & hook (Famiglia A)
   if (s.isQuestion) add("04", 6, "il copy apre con una domanda che qualifica il prospect");

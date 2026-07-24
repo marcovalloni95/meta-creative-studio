@@ -33,7 +33,7 @@ export function deriveOverlay(
     case "08": // Rating aggregato
       return points.proof ?? "★★★★★";
     case "15": // Mito vs Realta
-      return `MITO — "${shorten(points.objection ?? points.headline)}"  /  REALTÀ — [completa]`;
+      return `MITO — "${shorten(signals.mythLine ?? points.objection ?? points.headline, 10)}"  /  REALTÀ — [completa]`;
     case "23": // Founder Note
       return signals.founderLine ? shorten(signals.founderLine, 14) : points.headline;
     case "18": // Garanzia
