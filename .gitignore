@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+dist
+.env*
+public/renders
+
+# TypeScript incremental build info
+tsconfig.tsbuildinfo
