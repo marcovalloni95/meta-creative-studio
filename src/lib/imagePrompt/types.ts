@@ -1,121 +1,146 @@
-// Tipi del tool "Image Prompt Generator" (deterministico, offline).
-// Dato un copy Meta Ads + profilo stile cliente, produce prompt a blocchi
-// per la creativita statica (foto + testo overlay) nei formati 1:1 e 9:16.
+// Tipi del tool "Image Prompt Generator".
+// Dato un copy + parametri scelti dall'utente (formato, famiglia, scopo,
+// statica/carosello, modello, palette, logo) produce il/i prompt di
+// generazione immagine. Solo immagini statiche (statica singola o carosello).
 
-export type PromptFormat = "1:1" | "9:16";
+export type PromptFormat = "1:1" | "4:5" | "9:16";
+
+export const FORMAT_SPECS: Record<
+  PromptFormat,
+  { px: string; label: string; placements: string; safe: string }
+> = {
+  "1:1": {
+    px: "1080x1080",
+    label: "Quadrato 1:1",
+    placements: "Feed Facebook/Instagram, Esplora, marketplace",
+    safe: "keep text and logo within the inner 90% (avoid the outer ~8% margins)",
+  },
+  "4:5": {
+    px: "1080x1350",
+    label: "Verticale 4:5",
+    placements: "Feed (massima superficie verticale)",
+    safe: "keep text and logo within the inner 90% (avoid the outer ~8% margins)",
+  },
+  "9:16": {
+    px: "1080x1920",
+    label: "Verticale 9:16",
+    placements: "Stories, Reels, full-screen",
+    safe: "keep the top ~250px and bottom ~340px clear (Stories/Reels UI safe zones); no text or CTA there",
+  },
+};
 
 // Le 6 famiglie del Manuale delle Statiche.
 export type Family = "A" | "B" | "C" | "D" | "E" | "F";
 
 export const FAMILY_LABELS: Record<Family, string> = {
   A: "Messaggio & Hook",
-  B: "Prova & Credibilita",
+  B: "Prova & Credibilità",
   C: "Prodotto & Dimostrazione",
   D: "Confronto & Logica",
   E: "Offerta & Conversione",
   F: "Native & Contesto",
 };
 
-// Un archetipo del catalogo (22 archetipi, 6 famiglie).
+// Descrizione sintetica di ogni famiglia (dal Manuale).
+export const FAMILY_DESC: Record<Family, string> = {
+  A: "Statiche guidate dalla parola: fermano lo scroll con un'idea, una frase, un numero.",
+  B: "Statiche che spostano la fiducia: prova sociale e autorità.",
+  C: "Statiche che mostrano la cosa: prodotto, come funziona, cosa cambia.",
+  D: "Statiche che ragionano: confronto, obiezioni, scelta.",
+  E: "Statiche da fondo funnel: offerta, garanzia, urgenza. Da usare con parsimonia.",
+  F: "Statiche che non sembrano pubblicità: native, storytelling, lifestyle, meme.",
+};
+
+// Scopo della campagna: influenza CTA e tono.
+export type Goal = "leads" | "sales" | "awareness";
+
+export const GOAL_LABELS: Record<Goal, string> = {
+  leads: "Acquisizione contatti",
+  sales: "Acquisti",
+  awareness: "Brand awareness",
+};
+
+// Modello di generazione immagine: cambia la formattazione del prompt.
+export type Model = "nano-banana" | "chatgpt" | "midjourney" | "higgsfield";
+
+export const MODEL_LABELS: Record<Model, string> = {
+  "nano-banana": "Nano Banana (Gemini)",
+  chatgpt: "ChatGPT (GPT Image)",
+  midjourney: "Midjourney",
+  higgsfield: "Higgsfield",
+};
+
+export type ContentType = "static" | "carousel";
+
+// Palette con ruoli. Valori liberi (hex o nome colore).
+export type Palette = {
+  text: string;
+  cta: string;
+  background: string;
+  accent?: string;
+};
+
+// Logo allegato (solo metadati lato client + eventuale dataURL per anteprima).
+export type Logo = {
+  name: string;
+  dataUrl?: string;
+};
+
+// Un archetipo del catalogo.
 export type Archetype = {
   code: string; // "05"
-  name: string; // "Testimonianza"
-  family: Family;
-  // parole/segnali che nel copy attivano questo archetipo
-  triggers: RegExp[];
-  // come impostare l'overlay per questo archetipo
-  overlayRole: string;
-  // indicazione visiva sintetica (blocco Photo Aesthetics / Layout)
-  visual: string;
-};
-
-// I 5 punti d'attacco estratti dal copy.
-export type AttackPoints = {
-  headline: string; // prima riga / prima frase forte
-  quote?: string; // testo tra virgolette (testimonianza)
-  proof?: string; // numero/percentuale/prova
-  benefit?: string; // beneficio principale (best-effort)
-  objection?: string; // obiezione tipica (best-effort)
-  voice?: string; // voce narrante (founder/paziente) se rilevata
-};
-
-// Segnali booleani/valori rilevati euristicamente sul copy.
-export type Signals = {
-  hasQuote: boolean;
-  quote?: string;
-  number?: string; // il numero di prova piu rilevante
-  isQuestion: boolean;
-  hasMyth: boolean;
-  mythLine?: string;
-  hasFounder: boolean;
-  founderLine?: string;
-  hasGuarantee: boolean;
-  guaranteeLine?: string;
-  hasUrgency: boolean;
-  urgencyLine?: string;
-  hasOffer: boolean;
-  offerLine?: string;
-  hasComparison: boolean;
-  hasRating: boolean;
-  hasListicle: boolean;
-  firstPerson: boolean;
-  length: number;
-};
-
-// Profilo stile cliente (asset riusabile, estratto dalla landing).
-export type StyleProfile = {
-  id: string;
   name: string;
-  // subject di default (eta/tipo persona) in inglese
-  subject: string;
-  // ambientazioni tipiche
-  context: string;
-  // blocco Photo Aesthetics riutilizzabile (inglese)
-  photoAesthetics: string;
-  // palette con ruoli: testo, cta/badge, accento
-  palette: { text: string; cta: string; accent: string };
-  // vincoli negativi (inglese)
-  negatives: string;
-  // momento narrativo preferito
-  moment: string;
+  family: Family;
+  angle: string; // etichetta funzione/angolo (es. "PROVA SOCIALE")
+  copyRequired: string; // cosa serve dal copy (dal Manuale)
+  visual: string; // indicazione visiva sintetica
+  textDensity: "image-led" | "balanced" | "text-heavy"; // Leva A
+  visualStyle: "native" | "designed"; // Leva B
+  triggers: RegExp[]; // per l'auto-suggerimento dell'archetipo nella famiglia
 };
 
-// Un prompt completo per un singolo formato.
+// Punti d'attacco estratti dal copy (per riempire l'overlay).
+export type AttackPoints = {
+  headline: string;
+  quote?: string;
+  proof?: string;
+  benefit?: string;
+  objection?: string;
+  voice?: string;
+  cta?: string;
+  offer?: string;
+};
+
+// Un prompt per un singolo formato.
 export type FormatPrompt = {
   format: PromptFormat;
-  subject: string;
-  context: string;
-  photoAesthetics: string;
-  textOverlay: string;
-  layout: string;
-  directive: string;
-  // stringa unica pronta da copiare/incollare in Gemini/ChatGPT
-  full: string;
+  text: string; // prompt pronto da copiare per il modello scelto
 };
 
-// Una creativita generata: archetipo + motivazione + prompt nei 2 formati.
-export type Creative = {
+// Una "unità" generata: una statica singola o una slide del carosello.
+export type PromptUnit = {
+  slide?: number; // presente solo nei caroselli
+  role: string; // es. "Hook", "Prova", "CTA"
   archetype: Archetype;
-  reason: string;
   overlay: string; // testo overlay dominante
-  prompts: Record<PromptFormat, FormatPrompt>;
+  prompts: FormatPrompt[]; // uno per formato richiesto
 };
 
-// Output completo del generatore.
+export type GenerateRequest = {
+  copy: string;
+  formats: PromptFormat[];
+  family: Family;
+  archetypeCode?: string; // opzionale: se assente, auto dal copy nella famiglia
+  goal: Goal;
+  contentType: ContentType;
+  slides?: number; // solo carosello
+  model: Model;
+  palette: Palette;
+  logo?: Logo;
+};
+
 export type GenerateResult = {
   attackPoints: AttackPoints;
-  signals: Signals;
-  creatives: Creative[];
-  // note sul set: famiglie coperte + eventuale mancanza Famiglia E
-  setNote: string;
-  familiesCovered: Family[];
-};
-
-export type GenerateOptions = {
-  copy: string;
-  profile: StyleProfile;
-  // numero massimo di varianti da un copy lungo (default 3)
-  maxVariants?: number;
-  // formati richiesti (default entrambi)
-  formats?: PromptFormat[];
+  units: PromptUnit[];
+  note: string;
 };

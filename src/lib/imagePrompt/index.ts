@@ -1,51 +1,48 @@
-// Entry point del tool: generate() orchestra estrazione, classificazione e
-// costruzione dei prompt. Tutto deterministico e offline.
+// Entry point del tool. generate() prende la richiesta strutturata (copy +
+// parametri UI) e restituisce il/i prompt: una statica singola o N slide di
+// carosello, ciascuna nei formati richiesti.
 
-import { buildCreative } from "./buildPrompt";
-import { pickArchetypes } from "./classify";
-import { extractAttackPoints, extractSignals } from "./extract";
-import { FAMILY_LABELS } from "./types";
-import type { Family, GenerateOptions, GenerateResult, PromptFormat } from "./types";
+import { buildUnit } from "./buildPrompt";
+import { pickArchetype, planCarousel } from "./classify";
+import { extractAttackPoints } from "./extract";
+import type { GenerateRequest, GenerateResult, PromptUnit } from "./types";
 
 export * from "./types";
-export { ARCHETYPES } from "./archetypes";
-export { STYLE_PROFILES, getStyleProfile } from "./styleProfiles";
+export { ARCHETYPES, archetypesByFamily, getArchetype } from "./archetypes";
 
-const DEFAULT_FORMATS: PromptFormat[] = ["1:1", "9:16"];
+export function generate(req: GenerateRequest): GenerateResult {
+  const copy = req.copy ?? "";
+  const formats = req.formats.length ? req.formats : ["1:1" as const];
+  const points = extractAttackPoints(copy);
+  const primary = pickArchetype(copy, req.family, req.archetypeCode);
 
-export function generate(opts: GenerateOptions): GenerateResult {
-  const copy = opts.copy ?? "";
-  const profile = opts.profile;
-  const formats = opts.formats ?? DEFAULT_FORMATS;
-  const maxVariants = opts.maxVariants ?? 3;
+  const units: PromptUnit[] = [];
 
-  const signals = extractSignals(copy);
-  const points = extractAttackPoints(copy, signals);
-  const chosen = pickArchetypes(signals, maxVariants);
+  if (req.contentType === "carousel") {
+    const slides = planCarousel(copy, primary, req.slides ?? 3, req.goal);
+    slides.forEach((s, i) => {
+      units.push(
+        buildUnit(s.archetype, points, formats, req.model, req.palette, req.goal, req.logo, s.role, i + 1)
+      );
+    });
+  } else {
+    units.push(
+      buildUnit(primary, points, formats, req.model, req.palette, req.goal, req.logo, "Statica")
+    );
+  }
 
-  const creatives = chosen.map((c) =>
-    buildCreative(c.archetype, c.reason, points, signals, profile, formats)
-  );
-
-  const familiesCovered = Array.from(
-    new Set(creatives.map((c) => c.archetype.family))
-  ).sort() as Family[];
-
-  const setNote = buildSetNote(familiesCovered, creatives.length);
-
-  return { attackPoints: points, signals, creatives, setNote, familiesCovered };
+  return { attackPoints: points, units, note: buildNote(req, units) };
 }
 
-function buildSetNote(families: Family[], count: number): string {
-  if (count <= 1) {
-    return `Singola creativita (${families.map((f) => `${f} — ${FAMILY_LABELS[f]}`).join(", ")}). Per un set completo servono almeno 3 famiglie diverse: genera altre statiche da copy differenti.`;
+function buildNote(req: GenerateRequest, units: PromptUnit[]): string {
+  const fams = Array.from(new Set(units.map((u) => u.archetype.family))).sort();
+  if (req.contentType === "carousel") {
+    const covered = fams.join(", ");
+    const base = `Carosello di ${units.length} slide · famiglie coperte: ${covered}.`;
+    const missingE = !fams.includes("E")
+      ? " Nessuna leva di conversione pura (Famiglia E): valuta di chiudere con offerta/garanzia/urgenza."
+      : "";
+    return base + missingE + ` Ogni concetto è declinato nei formati ${req.formats.join(", ")}.`;
   }
-  const list = families.map((f) => `${f} (${FAMILY_LABELS[f]})`).join(", ");
-  const parts: string[] = [];
-  parts.push(`Famiglie coperte: ${list}.`);
-  if (families.length >= 3) parts.push("Minimo di 3 famiglie raggiunto.");
-  else parts.push("Il Manuale chiede almeno 3 famiglie diverse: aggiungi angoli su altre famiglie.");
-  if (!families.includes("E"))
-    parts.push("Manca la Famiglia E (Offerta/Garanzia/Urgenza): aggiungi una leva di conversione pura per chiudere il set.");
-  return parts.join(" ");
+  return `Statica singola · Archetipo ${units[0].archetype.code} ${units[0].archetype.name} (Famiglia ${units[0].archetype.family}). Per un set efficace il Manuale consiglia di pescare da almeno 3 famiglie diverse e declinare tutti i formati.`;
 }
