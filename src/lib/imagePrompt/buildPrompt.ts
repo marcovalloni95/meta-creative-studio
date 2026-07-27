@@ -1,7 +1,21 @@
-// Assembla il prompt a 6 blocchi (Subject / Context / Photo Aesthetics /
-// Text Overlay / Layout / Directive) per un archetipo, un profilo stile e un
-// formato. Deriva anche il testo overlay dominante dai punti d'attacco.
+// src/lib/imagePrompt/buildPrompt.ts
+// FILE MODIFICATO. Diff concettuale rispetto all'originale:
+//  1. importa renderModeOf + il modulo typography
+//  2. buildCreative ora BIFORCA su renderMode invece di produrre sempre un
+//     prompt fotorealistico
+//  3. per "typographic" produce un TypoSpec + HTML (niente prompt immagine)
+//  4. per "hybrid" produce un prompt immagine SENZA testo (background-only)
+//     piu' lo spec del layer tipografico
+//  5. per "photo" comportamento invariato
 
+import { renderModeOf, type RenderMode } from "./renderModes";
+import {
+  backgroundOnlyDirective,
+  buildTypoSpec,
+  getTypoProfile,
+  specToHtml,
+  type TypoSpec,
+} from "./typography";
 import type {
   Archetype,
   AttackPoints,
@@ -12,61 +26,61 @@ import type {
   StyleProfile,
 } from "./types";
 
-// Accorcia una frase per l'overlay (leggibilita a thumbnail): max ~12 parole.
 function shorten(text: string, maxWords = 12): string {
   const words = text.trim().replace(/\s+/g, " ").split(" ");
   if (words.length <= maxWords) return text.trim();
   return words.slice(0, maxWords).join(" ").replace(/[,;:]$/, "") + "…";
 }
 
-// Deriva il testo overlay dominante in base all'archetipo.
+// (invariato rispetto all'originale)
 export function deriveOverlay(
   archetype: Archetype,
   points: AttackPoints,
   signals: Signals
 ): string {
   switch (archetype.code) {
-    case "05": // Testimonianza
+    case "05":
       return points.quote ?? points.headline;
-    case "03": // Statistica / Big Number
+    case "03":
       return points.proof ? `${points.proof}` : points.headline;
-    case "08": // Rating aggregato
+    case "08":
       return points.proof ?? "★★★★★";
-    case "15": // Mito vs Realta
+    case "15":
       return `MITO — "${shorten(points.objection ?? points.headline)}"  /  REALTÀ — [completa]`;
-    case "23": // Founder Note
+    case "23":
       return signals.founderLine ? shorten(signals.founderLine, 14) : points.headline;
-    case "18": // Garanzia
+    case "18":
       return signals.guaranteeLine ? shorten(signals.guaranteeLine, 10) : "Garanzia";
-    case "19": // Urgenza
+    case "19":
       return signals.urgencyLine ? shorten(signals.urgencyLine, 10) : "Ultimi posti";
-    case "17": // Offerta
+    case "17":
       return signals.offerLine ? shorten(signals.offerLine, 10) : points.headline;
-    case "04": // Domanda
+    case "04":
       return points.headline;
-    case "02": // Listicle
+    case "02":
       return shorten(points.headline, 8);
-    default: // 01 Big Statement e altri
+    default:
       return shorten(points.headline, 12);
   }
 }
 
+// NUOVO: la CTA a bottone e' un elemento di prima classe, oggi assente.
+function deriveCta(archetype: Archetype, signals: Signals): string | undefined {
+  if (["17", "18", "19"].includes(archetype.code)) return "ACQUISTA ORA";
+  if (signals.hasOffer) return "ACQUISTA ORA";
+  if (archetype.code === "01" || archetype.code === "22") return "SCOPRI DI PIÙ";
+  return undefined;
+}
+
 function layoutFor(format: PromptFormat, archetype: Archetype): string {
   const isBigNumber = archetype.code === "03";
-  const isSplit = archetype.code === "15" || archetype.code === "11" || archetype.code === "14";
-
   if (format === "1:1") {
     if (isBigNumber)
       return "square 1080x1080; giant number occupies the upper 45%, supporting photo/tint in the lower 55%; keep text away from the outer 8% margins";
-    if (isSplit)
-      return "square 1080x1080; two contrasted bands (top vs bottom), clear divider; each band ~50%; keep text away from the outer 8% margins";
     return "square 1080x1080; photo fills ~65% (lower), text band ~35% (top); one dominant line, badge secondary; keep text away from the outer 8% margins";
   }
-  // 9:16
   if (isBigNumber)
     return "vertical 1080x1920; giant number in the central third, photo full-bleed behind; keep the top ~15% and bottom ~15% clear for Stories/Reels UI safe zones";
-  if (isSplit)
-    return "vertical 1080x1920; two stacked contrasted bands split around the center; keep the top ~15% and bottom ~15% clear for Stories/Reels UI safe zones";
   return "vertical 1080x1920; photo full-bleed background, dominant text stacked in the central third, badge/CTA just below; keep the top ~15% and bottom ~15% clear for Stories/Reels UI safe zones";
 }
 
@@ -79,22 +93,26 @@ function overlayInstruction(
   return `render this exact text (verbatim, correct Italian spelling and accents): "${overlay}". Role: ${archetype.overlayRole}. Typography: bold condensed sans, high contrast, one dominant element; main text in ${text}, badge/CTA in ${cta}, accents in ${accent}.`;
 }
 
-function directiveFor(profile: StyleProfile): string {
-  return `Photorealistic candid still, ${profile.moment}. Render the overlay text exactly as quoted with correct Italian spelling and accents, no invented words. Negative: ${profile.negatives}.`;
-}
-
 export function buildFormatPrompt(
   format: PromptFormat,
   archetype: Archetype,
   overlay: string,
-  profile: StyleProfile
+  profile: StyleProfile,
+  mode: RenderMode
 ): FormatPrompt {
   const subject = profile.subject;
   const context = profile.context;
   const photoAesthetics = `${profile.photoAesthetics}. Archetype cue: ${archetype.visual}.`;
-  const textOverlay = overlayInstruction(archetype, overlay, profile);
   const layout = layoutFor(format, archetype);
-  const directive = directiveFor(profile);
+
+  // hybrid: il modello genera SOLO lo sfondo, il testo si compone dopo.
+  const isHybrid = mode === "hybrid";
+  const textOverlay = isHybrid
+    ? "NONE — no text is generated by the image model. The overlay is composited afterwards from the TypoSpec."
+    : overlayInstruction(archetype, overlay, profile);
+  const directive = isHybrid
+    ? backgroundOnlyDirective(profile)
+    : `Photorealistic candid still, ${profile.moment}. Render the overlay text exactly as quoted with correct Italian spelling and accents, no invented words. Negative: ${profile.negatives}.`;
 
   const full = [
     `Subject: ${subject}.`,
@@ -109,6 +127,12 @@ export function buildFormatPrompt(
   return { format, subject, context, photoAesthetics, textOverlay, layout, directive, full };
 }
 
+// NUOVO tipo di ritorno, da aggiungere in types.ts (vedi MODIFICHE.md)
+export type TypographicOutput = {
+  spec: TypoSpec;
+  html: string;
+};
+
 export function buildCreative(
   archetype: Archetype,
   reason: string,
@@ -116,11 +140,34 @@ export function buildCreative(
   signals: Signals,
   profile: StyleProfile,
   formats: PromptFormat[]
-): Creative {
+): Creative & {
+  renderMode: RenderMode;
+  typographic?: Record<PromptFormat, TypographicOutput>;
+} {
   const overlay = deriveOverlay(archetype, points, signals);
+  const mode = renderModeOf(archetype);
+  const typo = getTypoProfile(profile.id);
+  const ctaLabel = deriveCta(archetype, signals);
+
   const prompts = {} as Record<PromptFormat, FormatPrompt>;
+  const typographic = {} as Record<PromptFormat, TypographicOutput>;
+
   for (const f of formats) {
-    prompts[f] = buildFormatPrompt(f, archetype, overlay, profile);
+    if (mode !== "typographic") {
+      prompts[f] = buildFormatPrompt(f, archetype, overlay, profile, mode);
+    }
+    if (mode !== "photo") {
+      const spec = buildTypoSpec(f, overlay, typo, ctaLabel);
+      typographic[f] = { spec, html: specToHtml(spec, typo.fontStack) };
+    }
   }
-  return { archetype, reason, overlay, prompts };
+
+  return {
+    archetype,
+    reason,
+    overlay,
+    prompts,
+    renderMode: mode,
+    typographic: mode === "photo" ? undefined : typographic,
+  };
 }
