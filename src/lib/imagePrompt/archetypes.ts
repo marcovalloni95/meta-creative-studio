@@ -10,7 +10,11 @@ export const ARCHETYPES: Archetype[] = [
     code: "01",
     name: "Big Statement",
     family: "A",
-    triggers: [/\b(mai|sempre|nessuno|tutti|smetti|basta|dimentica)\b/i],
+    triggers: [
+  /\b(mai|sempre|nessuno|tutti|smetti|basta|dimentica)\b/i,
+  /\b(ma|però|solo che|il problema è|tranne)\b\s*\.{2,}/i,   // open loop
+  /\.{3}\s*$/,                                               // sospensione finale
+],
     overlayRole: "affermazione dominante (1 frase enorme, alto contrasto)",
     visual: "sfondo minimale o tinta piena, una sola frase eroe tipografica",
   },
