@@ -111,10 +111,52 @@ export type AttackPoints = {
   offer?: string;
 };
 
-// Un prompt per un singolo formato.
+// Come va materialmente prodotta la creatività:
+//  photo       -> scena reale generata da un modello immagine
+//  typographic -> nessuna scena: tinta piena + tipografia (testo esatto),
+//                 renderizzata via HTML/Canvas, NON da un modello immagine
+//  hybrid      -> foto di sfondo (senza testo) + layer tipografico sopra
+export type RenderMode = "photo" | "typographic" | "hybrid";
+
+// Profilo tipografico (colori + font) derivato dalla palette scelta.
+export type TypoProfile = {
+  bg: string;
+  ink: string;
+  highlight: string;
+  ctaBg: string;
+  ctaInk: string;
+  fontStack: string;
+};
+
+export type TypoBlock = {
+  text: string;
+  color: string;
+  weight: number; // 1 = riga di rottura, 0.7 = corpo hook
+  align: "left" | "center";
+};
+
+// Spec di layout deterministico per una statica typographic.
+export type TypoSpec = {
+  format: PromptFormat;
+  width: number;
+  height: number;
+  bg: string;
+  blocks: TypoBlock[];
+  cta?: { label: string; bg: string; ink: string };
+};
+
+// Output typographic per un formato: spec + HTML autoportante (esportabile in PNG).
+export type TypoOutput = {
+  format: PromptFormat;
+  spec: TypoSpec;
+  html: string;
+};
+
+// Un prompt immagine per un singolo formato.
 export type FormatPrompt = {
   format: PromptFormat;
   text: string; // prompt pronto da copiare per il modello scelto
+  backgroundOnly?: boolean; // true per gli hybrid: il modello genera solo lo sfondo
 };
 
 // Una "unità" generata: una statica singola o una slide del carosello.
@@ -123,7 +165,9 @@ export type PromptUnit = {
   role: string; // es. "Hook", "Prova", "CTA"
   archetype: Archetype;
   overlay: string; // testo overlay dominante
-  prompts: FormatPrompt[]; // uno per formato richiesto
+  renderMode: RenderMode;
+  prompts: FormatPrompt[]; // prompt immagine (photo/hybrid); vuoto per typographic
+  typographic?: TypoOutput[]; // render tipografico (typographic/hybrid)
 };
 
 export type GenerateRequest = {

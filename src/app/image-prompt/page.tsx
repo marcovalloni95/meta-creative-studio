@@ -34,7 +34,7 @@ Sono il dott. [nome] di Shoulder Center: dal 2018 ci occupiamo solo di fisiotera
 Oltre 1200 pazienti seguiti da remoto e più di 130 video-testimonianze.
 Richiedi ora la prima consulenza gratuita: ti diciamo subito se sei idoneo.`;
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, label = "Copia" }: { text: string; label?: string }) {
   const [ok, setOk] = useState(false);
   return (
     <button
@@ -49,8 +49,54 @@ function CopyButton({ text }: { text: string }) {
         }
       }}
     >
-      {ok ? "Copiato ✓" : "Copia"}
+      {ok ? "Copiato ✓" : label}
     </button>
+  );
+}
+
+const MODE_LABEL: Record<PromptUnit["renderMode"], string> = {
+  photo: "Foto (prompt immagine)",
+  typographic: "Tipografica (render esatto)",
+  hybrid: "Ibrida (sfondo + testo)",
+};
+
+const PREVIEW_SCALE = 0.2;
+
+function TypoPreview({ t }: { t: NonNullable<PromptUnit["typographic"]>[number] }) {
+  const w = Math.round(t.spec.width * PREVIEW_SCALE);
+  const h = Math.round(t.spec.height * PREVIEW_SCALE);
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
+        <b>
+          Formato {t.format} · <span style={{ opacity: 0.7 }}>render tipografico</span>
+        </b>
+        <CopyButton text={t.html} label="Copia HTML" />
+      </div>
+      <div className="row" style={{ alignItems: "flex-start", gap: 12 }}>
+        <div
+          style={{
+            width: w, height: h, flex: "0 0 auto", overflow: "hidden",
+            borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)",
+          }}
+        >
+          <iframe
+            title={`preview-${t.format}`}
+            srcDoc={t.html}
+            sandbox=""
+            scrolling="no"
+            style={{
+              width: t.spec.width, height: t.spec.height, border: 0,
+              transform: `scale(${PREVIEW_SCALE})`, transformOrigin: "top left",
+            }}
+          />
+        </div>
+        <div className="small" style={{ opacity: 0.75, flex: 1 }}>
+          Testo <b>renderizzato esatto</b> dalla palette: nessun modello immagine, nessun
+          errore di ortografia. Salva l'HTML ed esportalo in PNG {t.spec.width}×{t.spec.height}.
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -68,7 +114,10 @@ function UnitCard({ u }: { u: PromptUnit }) {
             {a.angle} · {a.copyRequired}
           </div>
         </div>
-        <span className="tag">Fam. {a.family}</span>
+        <div className="row" style={{ gap: 6, flex: "0 0 auto" }}>
+          <span className="tag" data-mode={u.renderMode}>{MODE_LABEL[u.renderMode]}</span>
+          <span className="tag">Fam. {a.family}</span>
+        </div>
       </div>
 
       {u.overlay && (
@@ -80,11 +129,20 @@ function UnitCard({ u }: { u: PromptUnit }) {
       {u.prompts.map((p) => (
         <div key={p.format} style={{ marginTop: 12 }}>
           <div className="row" style={{ justifyContent: "space-between" }}>
-            <b>Formato {p.format}</b>
+            <b>
+              Formato {p.format}
+              {p.backgroundOnly && (
+                <span style={{ opacity: 0.7, fontWeight: 500 }}> · prompt solo sfondo</span>
+              )}
+            </b>
             <CopyButton text={p.text} />
           </div>
           <pre className="mono" style={{ marginTop: 8 }}>{p.text}</pre>
         </div>
+      ))}
+
+      {u.typographic?.map((t) => (
+        <TypoPreview key={`typo-${t.format}`} t={t} />
       ))}
     </div>
   );

@@ -2,6 +2,8 @@
 // (Nano Banana, ChatGPT, Midjourney, Higgsfield), al formato, alla palette,
 // allo scopo e all'eventuale logo.
 
+import { renderModeOf } from "./renderModes";
+import { buildTypoSpec, paletteToTypo, specToHtml } from "./typography";
 import { FORMAT_SPECS } from "./types";
 import type {
   Archetype,
@@ -13,6 +15,7 @@ import type {
   Palette,
   PromptFormat,
   PromptUnit,
+  TypoOutput,
 } from "./types";
 
 function shorten(text: string, maxWords: number): string {
@@ -92,7 +95,7 @@ function styleHint(a: Archetype): string {
 // ---- NANO BANANA / CHATGPT: prompt in linguaggio naturale a blocchi ----
 function buildNaturalPrompt(
   a: Archetype, format: PromptFormat, pal: Palette, goal: Goal,
-  logo: Logo | undefined, overlay: string, model: Model
+  logo: Logo | undefined, overlay: string, model: Model, backgroundOnly: boolean
 ): string {
   const spec = FORMAT_SPECS[format];
   const lines: string[] = [];
@@ -101,7 +104,11 @@ function buildNaturalPrompt(
   );
   lines.push(`Concept: ${a.visual}.`);
   lines.push(`Composition: ${densityHint(a)}; ${styleHint(a)}; clear visual hierarchy, one dominant element.`);
-  if (overlay) {
+  if (backgroundOnly) {
+    lines.push(
+      `Text overlay: NONE — the image model must NOT render any text, letters, numbers, logos or watermarks. The overlay ("${overlay}") is composited afterwards. Keep the central area calm and low-detail so the text stays readable.`
+    );
+  } else if (overlay) {
     lines.push(
       `Text overlay — render this exact text, verbatim, correct Italian spelling and accents: "${overlay}". Required copy elements: ${a.copyRequired}.`
     );
@@ -114,7 +121,9 @@ function buildNaturalPrompt(
   if (logoL) lines.push(logoL);
   lines.push(`Goal: ${goal === "leads" ? "lead generation" : goal === "sales" ? "sales/conversion" : "brand awareness"} — action direction: "${CTA_BY_GOAL[goal]}".`);
   lines.push(
-    `Constraints: photorealistic where people appear; no watermark; no invented logos; render text exactly as quoted; no misspelled Italian.`
+    backgroundOnly
+      ? `Constraints: photorealistic where people appear; absolutely no text of any kind in the image; no watermark; no invented logos.`
+      : `Constraints: photorealistic where people appear; no watermark; no invented logos; render text exactly as quoted; no misspelled Italian.`
   );
   return lines.join("\n");
 }
@@ -122,13 +131,14 @@ function buildNaturalPrompt(
 // ---- MIDJOURNEY / HIGGSFIELD: descrittivo, conciso, con parametri ----
 function buildDescriptivePrompt(
   a: Archetype, format: PromptFormat, pal: Palette, goal: Goal,
-  logo: Logo | undefined, overlay: string, model: Model
+  logo: Logo | undefined, overlay: string, model: Model, backgroundOnly: boolean
 ): string {
   const descr: string[] = [];
   descr.push(a.visual);
   descr.push(densityHint(a));
   descr.push(styleHint(a));
-  if (overlay) descr.push(`bold poster typography reading "${overlay}"`);
+  if (backgroundOnly) descr.push("clean background scene, no text, no letters, calm central area for a text overlay added later");
+  else if (overlay) descr.push(`bold poster typography reading "${overlay}"`);
   descr.push(`color palette: ${pal.text} text, ${pal.cta} accents, ${pal.background} background`);
   descr.push("high contrast, clear visual hierarchy, thumbnail-legible");
   const logoL = logoLine(logo, model);
@@ -136,7 +146,7 @@ function buildDescriptivePrompt(
 
   const base = descr.join(", ");
   if (model === "midjourney") {
-    return `${base} --ar ${format} --style raw --v 6`;
+    return `${base} --ar ${format} --style raw --v 6${backgroundOnly ? " --no text,words,letters" : ""}`;
   }
   // higgsfield: still image mode, cinematic
   return `${base}. Aspect ratio ${format} (${FORMAT_SPECS[format].px}), still image, cinematic lighting.${logoL ? " " + logoL : ""}`;
@@ -144,13 +154,25 @@ function buildDescriptivePrompt(
 
 export function buildFormatPrompt(
   a: Archetype, format: PromptFormat, model: Model, pal: Palette,
-  goal: Goal, logo: Logo | undefined, overlay: string
+  goal: Goal, logo: Logo | undefined, overlay: string, backgroundOnly = false
 ): FormatPrompt {
   const text =
     model === "midjourney" || model === "higgsfield"
-      ? buildDescriptivePrompt(a, format, pal, goal, logo, overlay, model)
-      : buildNaturalPrompt(a, format, pal, goal, logo, overlay, model);
-  return { format, text };
+      ? buildDescriptivePrompt(a, format, pal, goal, logo, overlay, model, backgroundOnly)
+      : buildNaturalPrompt(a, format, pal, goal, logo, overlay, model, backgroundOnly);
+  return { format, text, backgroundOnly: backgroundOnly || undefined };
+}
+
+// Etichetta CTA a bottone per le statiche typographic, in base allo scopo.
+const CTA_LABEL_BY_GOAL: Record<Goal, string> = {
+  leads: "RICHIEDI ORA",
+  sales: "ACQUISTA ORA",
+  awareness: "SCOPRI DI PIÙ",
+};
+function deriveCta(a: Archetype, goal: Goal): string | undefined {
+  // bottone CTA solo dove ha senso: leve di conversione (Fam. E) e hook forti
+  if (["17", "18", "19", "01", "04"].includes(a.code)) return CTA_LABEL_BY_GOAL[goal];
+  return undefined;
 }
 
 export function buildUnit(
@@ -159,6 +181,30 @@ export function buildUnit(
   role: string, slide?: number
 ): PromptUnit {
   const overlay = deriveOverlay(a, points, goal);
-  const prompts = formats.map((f) => buildFormatPrompt(a, f, model, pal, goal, logo, overlay));
-  return { slide, role, archetype: a, overlay, prompts };
+  const mode = renderModeOf(a);
+  const typo = paletteToTypo(pal);
+  const ctaLabel = deriveCta(a, goal);
+
+  const prompts: FormatPrompt[] = [];
+  const typographic: TypoOutput[] = [];
+
+  for (const f of formats) {
+    if (mode !== "typographic") {
+      prompts.push(buildFormatPrompt(a, f, model, pal, goal, logo, overlay, mode === "hybrid"));
+    }
+    if (mode !== "photo" && overlay) {
+      const spec = buildTypoSpec(f, overlay, typo, ctaLabel);
+      typographic.push({ format: f, spec, html: specToHtml(spec, typo.fontStack) });
+    }
+  }
+
+  return {
+    slide,
+    role,
+    archetype: a,
+    overlay,
+    renderMode: mode,
+    prompts,
+    typographic: typographic.length ? typographic : undefined,
+  };
 }
