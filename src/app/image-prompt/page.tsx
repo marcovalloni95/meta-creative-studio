@@ -215,8 +215,9 @@ export default function ImagePromptPage() {
         <div style={{ fontSize: 16, fontWeight: 750 }}>Image Prompt Generator</div>
         <div className="small" style={{ opacity: 0.8, marginTop: 4 }}>
           Dato un <b>copy</b>, imposti i parametri e ottieni il/i <b>prompt</b> per la generazione
-          immagine. Solo statiche (immagine singola o carosello). Basato sul Manuale delle Statiche
-          (6 famiglie, 24 archetipi).
+          immagine — con <b>gerarchia visiva/wireframe</b>, posizionamento di testo, grafica e foto
+          per formato e integrazione della <b>CTA</b> in ogni punto. Solo statiche (immagine singola o
+          carosello). Basato sul Manuale delle Statiche (6 famiglie, 24 archetipi).
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 // (Nano Banana, ChatGPT, Midjourney, Higgsfield), al formato, alla palette,
 // allo scopo e all'eventuale logo.
 
+import { getLayout } from "./layouts";
 import { renderModeOf } from "./renderModes";
 import { buildTypoSpec, paletteToTypo, specToHtml } from "./typography";
 import { FORMAT_SPECS } from "./types";
@@ -98,15 +99,20 @@ function buildNaturalPrompt(
   logo: Logo | undefined, overlay: string, model: Model, backgroundOnly: boolean
 ): string {
   const spec = FORMAT_SPECS[format];
+  const L = getLayout(a.code);
+  const placement = format === "1:1" ? L.square : L.vertical;
+  const cta = CTA_BY_GOAL[goal];
   const lines: string[] = [];
   lines.push(
     `Create a static Meta ad creative, ${spec.label} (${spec.px}), archetype "${a.code} ${a.name}" (${a.angle}).`
   );
   lines.push(`Concept: ${a.visual}.`);
-  lines.push(`Composition: ${densityHint(a)}; ${styleHint(a)}; clear visual hierarchy, one dominant element.`);
+  lines.push(`Composition: ${densityHint(a)}; ${styleHint(a)}.`);
+  lines.push(`Visual hierarchy / wireframe: ${L.hierarchy}`);
+  lines.push(`Element placement (${format}): ${placement} ${spec.safe}; readable as a thumbnail (main message legible at 200px wide).`);
   if (backgroundOnly) {
     lines.push(
-      `Text overlay: NONE — the image model must NOT render any text, letters, numbers, logos or watermarks. The overlay ("${overlay}") is composited afterwards. Keep the central area calm and low-detail so the text stays readable.`
+      `Text overlay: NONE — the image model must NOT render any text, letters, numbers, logos or watermarks. Leave the described zones clear and low-detail; the overlay ("${overlay}") and the CTA are composited afterwards.`
     );
   } else if (overlay) {
     lines.push(
@@ -116,10 +122,14 @@ function buildNaturalPrompt(
     lines.push(`Text overlay: minimal or none (${a.copyRequired}).`);
   }
   lines.push(`Colors: ${paletteLine(pal)}; high contrast between text and background.`);
-  lines.push(`Layout: ${spec.safe}; readable as a thumbnail (main message legible at 200px wide).`);
+  lines.push(
+    backgroundOnly
+      ? `Call to action (composited later): ${L.cta} Reserve a clear area for the CTA button labelled "${cta}" in the ${pal.cta} color.`
+      : `Call to action: ${L.cta} Use the exact CTA label "${cta}" in the ${pal.cta} color.`
+  );
   const logoL = logoLine(logo, model);
   if (logoL) lines.push(logoL);
-  lines.push(`Goal: ${goal === "leads" ? "lead generation" : goal === "sales" ? "sales/conversion" : "brand awareness"} — action direction: "${CTA_BY_GOAL[goal]}".`);
+  lines.push(`Goal: ${goal === "leads" ? "lead generation" : goal === "sales" ? "sales/conversion" : "brand awareness"}.`);
   lines.push(
     backgroundOnly
       ? `Constraints: photorealistic where people appear; absolutely no text of any kind in the image; no watermark; no invented logos.`
@@ -133,11 +143,15 @@ function buildDescriptivePrompt(
   a: Archetype, format: PromptFormat, pal: Palette, goal: Goal,
   logo: Logo | undefined, overlay: string, model: Model, backgroundOnly: boolean
 ): string {
+  const L = getLayout(a.code);
+  const placement = format === "1:1" ? L.square : L.vertical;
+  const cta = CTA_BY_GOAL[goal];
   const descr: string[] = [];
   descr.push(a.visual);
   descr.push(densityHint(a));
   descr.push(styleHint(a));
-  if (backgroundOnly) descr.push("clean background scene, no text, no letters, calm central area for a text overlay added later");
+  descr.push(`layout: ${L.hierarchy} ${placement}`);
+  if (backgroundOnly) descr.push("clean background scene, no text, no letters, calm zones reserved for text and CTA added later");
   else if (overlay) descr.push(`bold poster typography reading "${overlay}"`);
   descr.push(`color palette: ${pal.text} text, ${pal.cta} accents, ${pal.background} background`);
   descr.push("high contrast, clear visual hierarchy, thumbnail-legible");
@@ -145,11 +159,14 @@ function buildDescriptivePrompt(
   if (logoL) descr.push("clear corner space for a brand logo");
 
   const base = descr.join(", ");
+  const ctaNote = backgroundOnly
+    ? ` CTA (composited later): ${L.cta} Reserve space for the "${cta}" button in ${pal.cta}.`
+    : ` CTA: ${L.cta} Label "${cta}" in ${pal.cta}.`;
   if (model === "midjourney") {
-    return `${base} --ar ${format} --style raw --v 6${backgroundOnly ? " --no text,words,letters" : ""}`;
+    return `${base} --ar ${format} --style raw --v 6${backgroundOnly ? " --no text,words,letters" : ""}\n${ctaNote.trim()}`;
   }
   // higgsfield: still image mode, cinematic
-  return `${base}. Aspect ratio ${format} (${FORMAT_SPECS[format].px}), still image, cinematic lighting.${logoL ? " " + logoL : ""}`;
+  return `${base}. Aspect ratio ${format} (${FORMAT_SPECS[format].px}), still image, cinematic lighting.${ctaNote}${logoL ? " " + logoL : ""}`;
 }
 
 export function buildFormatPrompt(
@@ -189,9 +206,10 @@ export function buildUnit(
   const typographic: TypoOutput[] = [];
 
   for (const f of formats) {
-    if (mode !== "typographic") {
-      prompts.push(buildFormatPrompt(a, f, model, pal, goal, logo, overlay, mode === "hybrid"));
-    }
+    // Prompt immagine completo (con layout/wireframe + CTA) per OGNI archetipo.
+    // Per gli hybrid il modello genera solo lo sfondo (backgroundOnly).
+    prompts.push(buildFormatPrompt(a, f, model, pal, goal, logo, overlay, mode === "hybrid"));
+    // Extra: per typographic/hybrid, anche il render tipografico esatto (HTML->PNG).
     if (mode !== "photo" && overlay) {
       const spec = buildTypoSpec(f, overlay, typo, ctaLabel);
       typographic.push({ format: f, spec, html: specToHtml(spec, typo.fontStack) });
