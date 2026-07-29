@@ -3,6 +3,7 @@
 // tipografico esatto (TYPO/HYBRID) e la checklist di validazione.
 
 import { extractOnImage } from "./extract";
+import { renderTemplate } from "./renderTemplates";
 import { buildSchemaPrompt } from "./schemas";
 import { buildTypoSpec, paletteToTypo, specToHtml } from "./typography";
 import { validate } from "./validate";
@@ -53,12 +54,15 @@ export function buildUnit(
     backgroundOnly: a.schema === "HYBRID" || undefined,
   }));
 
-  // Render tipografico esatto (HTML->PNG) per gli schemi a testo pieno / layer.
+  // Render deterministico (HTML->PNG): per gli archetipi TYPO con template
+  // dedicato produce la grafica FINITA (comparison, offerta, timeline, rating…);
+  // altrimenti il render tipografico semplice. Per HYBRID è il layer di testo.
   let typographic: TypoOutput[] | undefined;
-  if ((a.schema === "TYPO" || a.schema === "HYBRID") && overlay) {
+  if (a.schema === "TYPO" || (a.schema === "HYBRID" && overlay)) {
     typographic = formats.map((f) => {
-      const spec = buildTypoSpec(f, overlay, typo, ctaLabel);
-      return { format: f, spec, html: specToHtml(spec, typo.fontStack) };
+      const spec = buildTypoSpec(f, overlay || onImage.headline || a.name, typo, ctaLabel);
+      const html = renderTemplate(a.code, f, onImage, pal) ?? specToHtml(spec, typo.fontStack);
+      return { format: f, spec, html };
     });
   }
 

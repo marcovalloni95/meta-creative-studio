@@ -118,7 +118,15 @@ export function extractOnImage(a: Archetype, copy: string, p: AttackPoints, goal
     case "14": return { criteri: "[3–5 criteri]", cta };
     case "15": return { mito: words(p.objection ?? h, 10), realta: "[la realtà]" };
     case "16": return { opzioneA: "[opzione A]", opzioneB: "[opzione B]", cta };
-    case "17": return { offerta: p.offer ? words(p.offer, 8) : words(h, 8), cta, codice: "[CODICE]" };
+    case "17": {
+      const disc = (copy.match(/-?\s*\d+\s*%/) || copy.match(/€\s*\d+/) || [])[0];
+      const code = (copy.match(/codice\s+([A-Za-z0-9]{3,})/i) || [])[1];
+      return {
+        offerta: disc ? disc.replace(/\s+/g, "") : words(p.offer || h, 4),
+        cta,
+        codice: code ? code.toUpperCase() : "[CODICE]",
+      };
+    }
     case "18": return { promessa: "Soddisfatto o rimborsato", condizioni: "[condizioni / giorni]", cta };
     case "19": return { limite: p.offer ? words(p.offer, 8) : "[scadenza / posti]", cta };
     case "20": return { occhiello: "[occhiello]", titolo: words(h, 12), corpo: "[sommario]" };
