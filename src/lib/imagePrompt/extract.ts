@@ -1,7 +1,8 @@
 // Estrazione euristica dei punti d'attacco dal copy: servono a riempire
 // l'overlay dell'archetipo e a pianificare le slide del carosello.
 
-import type { AttackPoints } from "./types";
+import { CTA_BY_GOAL } from "./types";
+import type { Archetype, AttackPoints, Goal, OnImageText } from "./types";
 
 function deaccent(s: string): string {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -77,6 +78,56 @@ export function extractAttackPoints(copy: string): AttackPoints {
     cta: ctaLine,
     offer: offerLine,
   };
+}
+
+function words(text: string, max: number): string {
+  const w = text.trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
+  if (w.length <= max) return w.join(" ").replace(/[.,;:]$/, "");
+  return w.slice(0, max).join(" ").replace(/[.,;:]$/, "") + "…";
+}
+
+// Fino a `n` voci brevi dal copy (per listicle/bundle), escludendo l'headline.
+function bullets(copy: string, headline: string, n: number): string[] {
+  return copy
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 4 && s !== headline)
+    .slice(0, n)
+    .map((s) => words(s, 6));
+}
+
+// Estrae le stringhe testuali da mettere ON-IMAGE, secondo lo schema JSON che
+// l'archetipo richiede (copyRequired). Valori tra [] = da completare a mano.
+export function extractOnImage(a: Archetype, copy: string, p: AttackPoints, goal: Goal): OnImageText {
+  const h = p.headline || "";
+  const cta = CTA_BY_GOAL[goal];
+  switch (a.code) {
+    case "01": return { headline: words(h, 9) };
+    case "02": return { titolo: words(h, 6), voci: (bullets(copy, h, 5).join(" · ") || "[3–5 voci]") };
+    case "03": return { numero: p.proof ?? "[numero]", contesto: words(h, 8) };
+    case "04": return { domanda: h.includes("?") ? h : `${words(h, 9)}?`, opzioni: "[2–3 opzioni]" };
+    case "05": return { quote: p.quote ?? words(h, 12), nome: "[Nome, ruolo]" };
+    case "06": return { testo: p.quote ?? words(h, 14), username: "[@utente · ★★★★★]" };
+    case "07": return { headline: words(h, 8), loghi: "[loghi testate]" };
+    case "08": return { voto: "★★★★★ 4,9/5", recensioni: p.proof ?? "[N recensioni]" };
+    case "09": return { nome: "[nome prodotto]", claim: words(h, 6) };
+    case "10": return { feature: "[2–4 feature + beneficio]" };
+    case "11": return { prima: "PRIMA", dopo: "DOPO", claim: p.benefit ? words(p.benefit, 8) : words(h, 8) };
+    case "12": return { step: bullets(copy, h, 3).join(" → ") || "[3 step]" };
+    case "13": return { componenti: "[lista componenti]", valore: "[valore totale]" };
+    case "14": return { criteri: "[3–5 criteri]", cta };
+    case "15": return { mito: words(p.objection ?? h, 10), realta: "[la realtà]" };
+    case "16": return { opzioneA: "[opzione A]", opzioneB: "[opzione B]", cta };
+    case "17": return { offerta: p.offer ? words(p.offer, 8) : words(h, 8), cta, codice: "[CODICE]" };
+    case "18": return { promessa: "Soddisfatto o rimborsato", condizioni: "[condizioni / giorni]", cta };
+    case "19": return { limite: p.offer ? words(p.offer, 8) : "[scadenza / posti]", cta };
+    case "20": return { occhiello: "[occhiello]", titolo: words(h, 12), corpo: "[sommario]" };
+    case "21": return { claim: p.benefit ? words(p.benefit, 6) : words(h, 6) };
+    case "22": return { top: words(h, 6), bottom: "[bottom text]" };
+    case "23": return { frase: p.voice && p.voice.length > 12 ? words(p.voice, 14) : words(h, 12), firma: "— [Nome], fondatore" };
+    case "24": return { claim: "" };
+    default: return { headline: words(h, 10) };
+  }
 }
 
 // Punteggio euristico di un archetipo sul copy (per l'auto-scelta nella famiglia).

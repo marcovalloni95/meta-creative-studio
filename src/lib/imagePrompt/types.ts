@@ -60,6 +60,13 @@ export const GOAL_LABELS: Record<Goal, string> = {
   awareness: "Brand awareness",
 };
 
+// Etichetta CTA (la "Leva") in base allo scopo.
+export const CTA_BY_GOAL: Record<Goal, string> = {
+  leads: "Richiedi la consulenza gratuita",
+  sales: "Acquista ora",
+  awareness: "Scopri di più",
+};
+
 // Modello di generazione immagine: cambia la formattazione del prompt.
 export type Model = "nano-banana" | "chatgpt" | "midjourney" | "higgsfield";
 
@@ -86,18 +93,58 @@ export type Logo = {
   dataUrl?: string;
 };
 
-// Un archetipo del catalogo.
+// Lo SCHEMA determina QUALE builder di prompt viene composto (campo chiave del
+// refactor): schemi strutturalmente diversi, con campi diversi.
+//  PHOTO    -> scena reale da fotografare
+//  TYPO     -> poster grafico a sfondo pieno, nessuna fotografia
+//  HYBRID   -> foto + strato tipografico, con zona dichiarata per il testo
+//  UI_MOCK  -> mockup di interfaccia (recensione, chat, articolo)
+export type Schema = "PHOTO" | "TYPO" | "HYBRID" | "UI_MOCK";
+
+// Grammatica a 4 token con cui il Manuale costruisce tutti i wireframe.
+export type LayoutToken = "IMG" | "TXT" | "ACC" | "BG";
+export type LayoutArea =
+  | "full"
+  | "top"
+  | "upper"
+  | "center"
+  | "lower"
+  | "bottom"
+  | "left"
+  | "right"
+  | "split-v"
+  | "split-h";
+
+export type LayoutZone = {
+  token: LayoutToken;
+  area: LayoutArea;
+  weight: number; // peso relativo 0-100
+  role: string; // es. "headline", "cta", "fondo pieno"
+};
+
+// Un archetipo del catalogo (registry: unica fonte di verità).
 export type Archetype = {
   code: string; // "05"
+  id: string; // "B05" (famiglia + code)
   name: string;
   family: Family;
+  schema: Schema; // quale builder di prompt usare
   angle: string; // etichetta funzione/angolo (es. "PROVA SOCIALE")
   copyRequired: string; // cosa serve dal copy (dal Manuale)
+  do: string; // best practice specifica (dal Manuale)
+  dont: string; // errore da evitare (dal Manuale)
   visual: string; // indicazione visiva sintetica
   textDensity: "image-led" | "balanced" | "text-heavy"; // Leva A
   visualStyle: "native" | "designed"; // Leva B
+  layoutSpec: LayoutZone[]; // wireframe a zone (riflowato per formato)
   triggers: RegExp[]; // per l'auto-suggerimento dell'archetipo nella famiglia
 };
+
+// Stringhe testuali da mettere ON-IMAGE, estratte dal copy per archetipo.
+export type OnImageText = Record<string, string>;
+
+// Esito di un controllo di validazione pre-output.
+export type ChecklistItem = { label: string; ok: boolean };
 
 // Punti d'attacco estratti dal copy (per riempire l'overlay).
 export type AttackPoints = {
@@ -110,13 +157,6 @@ export type AttackPoints = {
   cta?: string;
   offer?: string;
 };
-
-// Come va materialmente prodotta la creatività:
-//  photo       -> scena reale generata da un modello immagine
-//  typographic -> nessuna scena: tinta piena + tipografia (testo esatto),
-//                 renderizzata via HTML/Canvas, NON da un modello immagine
-//  hybrid      -> foto di sfondo (senza testo) + layer tipografico sopra
-export type RenderMode = "photo" | "typographic" | "hybrid";
 
 // Profilo tipografico (colori + font) derivato dalla palette scelta.
 export type TypoProfile = {
@@ -164,10 +204,12 @@ export type PromptUnit = {
   slide?: number; // presente solo nei caroselli
   role: string; // es. "Hook", "Prova", "CTA"
   archetype: Archetype;
-  overlay: string; // testo overlay dominante
-  renderMode: RenderMode;
-  prompts: FormatPrompt[]; // prompt immagine (photo/hybrid); vuoto per typographic
-  typographic?: TypoOutput[]; // render tipografico (typographic/hybrid)
+  schema: Schema;
+  onImage: OnImageText; // stringhe testuali da mostrare a parte
+  overlay: string; // stringa dominante (compat/anteprima)
+  prompts: FormatPrompt[]; // prompt immagine, uno per formato
+  typographic?: TypoOutput[]; // render tipografico esatto (TYPO/HYBRID/UI_MOCK)
+  checklist: ChecklistItem[]; // esiti validazione pre-output
 };
 
 export type GenerateRequest = {

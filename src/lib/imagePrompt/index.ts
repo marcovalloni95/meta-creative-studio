@@ -23,12 +23,12 @@ export function generate(req: GenerateRequest): GenerateResult {
     const slides = planCarousel(copy, primary, req.slides ?? 3, req.goal);
     slides.forEach((s, i) => {
       units.push(
-        buildUnit(s.archetype, points, formats, req.model, req.palette, req.goal, req.logo, s.role, i + 1)
+        buildUnit(s.archetype, copy, points, formats, req.model, req.palette, req.goal, req.logo, s.role, i + 1)
       );
     });
   } else {
     units.push(
-      buildUnit(primary, points, formats, req.model, req.palette, req.goal, req.logo, "Statica")
+      buildUnit(primary, copy, points, formats, req.model, req.palette, req.goal, req.logo, "Statica")
     );
   }
 

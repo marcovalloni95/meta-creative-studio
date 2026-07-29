@@ -55,10 +55,11 @@ function CopyButton({ text, label = "Copia" }: { text: string; label?: string })
   );
 }
 
-const MODE_LABEL: Record<PromptUnit["renderMode"], string> = {
-  photo: "Foto (prompt immagine)",
-  typographic: "Tipografica (render esatto)",
-  hybrid: "Ibrida (sfondo + testo)",
+const SCHEMA_LABEL: Record<PromptUnit["schema"], string> = {
+  PHOTO: "Foto",
+  TYPO: "Tipografica",
+  HYBRID: "Ibrida (foto + testo)",
+  UI_MOCK: "Mockup UI",
 };
 
 const PREVIEW_SCALE = 0.2;
@@ -116,14 +117,18 @@ function UnitCard({ u }: { u: PromptUnit }) {
           </div>
         </div>
         <div className="row" style={{ gap: 6, flex: "0 0 auto" }}>
-          <span className="tag" data-mode={u.renderMode}>{MODE_LABEL[u.renderMode]}</span>
+          <span className="tag" data-schema={u.schema}>Schema {u.schema} · {SCHEMA_LABEL[u.schema]}</span>
           <span className="tag">Fam. {a.family}</span>
         </div>
       </div>
 
-      {u.overlay && (
+      {Object.keys(u.onImage).length > 0 && (
         <div className="kv" style={{ marginTop: 10 }}>
-          <b>Overlay:</b> “{u.overlay}”
+          <b>Testo on-image:</b>{" "}
+          {Object.entries(u.onImage)
+            .filter(([, v]) => v && v.trim())
+            .map(([k, v]) => `${k}: "${v}"`)
+            .join(" · ")}
         </div>
       )}
 
@@ -133,7 +138,7 @@ function UnitCard({ u }: { u: PromptUnit }) {
             <b>
               Formato {p.format}
               {p.backgroundOnly && (
-                <span style={{ opacity: 0.7, fontWeight: 500 }}> · prompt solo sfondo</span>
+                <span style={{ opacity: 0.7, fontWeight: 500 }}> · sfondo + layer testo</span>
               )}
             </b>
             <CopyButton text={p.text} />
@@ -145,6 +150,19 @@ function UnitCard({ u }: { u: PromptUnit }) {
       {u.typographic?.map((t) => (
         <TypoPreview key={`typo-${t.format}`} t={t} />
       ))}
+
+      {u.checklist.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <div className="small" style={{ opacity: 0.7, marginBottom: 4 }}>Validazione</div>
+          <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+            {u.checklist.map((ci, i) => (
+              <li key={i} className="small" style={{ color: ci.ok ? "var(--muted)" : "#ffb4b4" }}>
+                {ci.ok ? "✓" : "✗"} {ci.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -215,10 +233,11 @@ export default function ImagePromptPage() {
       <div className="card">
         <div style={{ fontSize: 16, fontWeight: 750 }}>Image Prompt Generator</div>
         <div className="small" style={{ opacity: 0.8, marginTop: 4 }}>
-          Dato un <b>copy</b>, imposti i parametri e ottieni il/i <b>prompt</b> per la generazione
-          immagine — con <b>gerarchia visiva/wireframe</b>, posizionamento di testo, grafica e foto
-          per formato e integrazione della <b>CTA</b> in ogni punto. Solo statiche (immagine singola o
-          carosello). Basato sul Manuale delle Statiche (6 famiglie, 24 archetipi).
+          Dato un <b>copy</b>, imposti i parametri e ottieni il/i <b>prompt</b>. L'archetipo
+          seleziona lo <b>schema</b> (PHOTO / TYPO / HYBRID / UI_MOCK) — prompt con campi diversi —
+          con <b>layoutSpec</b> a zone riflowata per formato, stringhe on-image letterali e
+          validazione. Solo statiche (immagine singola o carosello). Basato sul Manuale delle
+          Statiche (6 famiglie, 24 archetipi).
         </div>
       </div>
 
