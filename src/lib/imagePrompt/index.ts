@@ -9,6 +9,7 @@ import type { GenerateRequest, GenerateResult, PromptUnit } from "./types";
 
 export * from "./types";
 export { ARCHETYPES, archetypesByFamily, getArchetype } from "./archetypes";
+export { MODEL_HINT, ROLE, BEST_PRACTICES, NEGATIVE_DEFAULTS } from "./guidelines";
 
 export function generate(req: GenerateRequest): GenerateResult {
   const copy = req.copy ?? "";

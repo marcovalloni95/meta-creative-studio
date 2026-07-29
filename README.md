@@ -27,21 +27,21 @@ cliente** (estratto dalla landing page, riusabile), produce automaticamente il *
 generazione immagine** per la creatività statica associata, pronto per **Gemini (Nano Banana)**
 o ChatGPT.
 
-- **Solo immagini statiche** (nessun video), formati **1:1** e **9:16**.
-- Workflow: estrae i punti d'attacco dal copy → classifica l'**archetipo** tra i 22 del Manuale
-  delle Statiche (6 famiglie) → compila il prompt a **6 blocchi** (Subject / Context /
-  Photo Aesthetics / Text Overlay / Layout / Directive) per entrambi i formati.
-- Da un copy lungo/ricco ricava **più statiche distinte** su famiglie diverse (mai una VSL) e
-  segnala se al set manca una leva di conversione pura (Famiglia E).
+- **Solo immagini statiche** (nessun video): immagine singola o **carosello** (un prompt per slide), formati **1:1 / 4:5 / 9:16**.
+- Input: copy, **Famiglia** del Manuale (A–F) + archetipo, **Scopo**, statica/carosello, **Modello** (Nano Banana / ChatGPT / Midjourney / Higgsfield), **palette**, **logo**.
+- Ogni prompt include **Ruolo + Contesto + Task + Formato + Negative**, con **gerarchia visiva/wireframe**, posizionamento di testo/grafica/foto per formato e **CTA** integrata per archetipo.
+- **Render mode**: photo → prompt immagine · typographic → render tipografico esatto (HTML→PNG) · hybrid → prompt "solo sfondo" + layer testo.
 - Tutto in locale, nessuna chiamata esterna né API key.
 
+**Linee guida creatività**: vedi [`docs/linee-guida-creativita.md`](docs/linee-guida-creativita.md) (metodo dal workshop AI Creativa · 4ECOM/Loop), applicate automaticamente dal generatore.
+
 Codice del motore in `src/lib/imagePrompt/`:
-- `archetypes.ts` → catalogo 22 archetipi / 6 famiglie con trigger
-- `styleProfiles.ts` → profili stile cliente riusabili (preset Shoulder Center + generico)
-- `extract.ts` → estrazione euristica di segnali e punti d'attacco dal copy
-- `classify.ts` → assegnazione archetipo/i (single o multi-variante)
-- `buildPrompt.ts` → assemblaggio prompt a blocchi + overlay per formato
-- `index.ts` → `generate()` orchestratore
+- `archetypes.ts` → catalogo 24 archetipi / 6 famiglie (con COPY RICHIESTO)
+- `layouts.ts` → blueprint di layout/wireframe + CTA per archetipo e formato
+- `guidelines.ts` → ruolo, best practice, negative e hint modello (dal workshop)
+- `renderModes.ts` / `typography.ts` → render mode e render tipografico esatto
+- `extract.ts` / `classify.ts` → punti d'attacco + scelta archetipo e piano carosello
+- `buildPrompt.ts` → assemblaggio prompt (per modello/formato) + `index.ts` → `generate()`
 
 ## Dove personalizzare
 - `src/lib/templates.ts` → definizione template e regole tipografiche (wizard)
