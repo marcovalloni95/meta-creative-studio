@@ -134,6 +134,7 @@ export type Archetype = {
   do: string; // best practice specifica (dal Manuale)
   dont: string; // errore da evitare (dal Manuale)
   visual: string; // indicazione visiva sintetica
+  elements: string; // vocabolario grafico concreto (icone, badge, colonne, pillole…)
   textDensity: "image-led" | "balanced" | "text-heavy"; // Leva A
   visualStyle: "native" | "designed"; // Leva B
   layoutSpec: LayoutZone[]; // wireframe a zone (riflowato per formato)

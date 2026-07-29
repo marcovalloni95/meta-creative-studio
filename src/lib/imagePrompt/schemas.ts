@@ -52,6 +52,7 @@ function photo(c: Ctx): string[] {
   const claim = c.onImage.claim || c.onImage.nome;
   return [
     `Concept: ${c.a.visual}.`,
+    `Graphic elements: ${c.a.elements}.`,
     `Subject & setting: a real, believable scene to photograph for "${c.a.name}"; ${c.a.do}`,
     `Framing & lens: product/subject-appropriate framing (e.g. 50mm still-life or macro for product, 35mm for lifestyle), eye-level unless the scene suggests otherwise.`,
     `Lighting: natural or soft studio light, directional, soft shadows; realistic depth of field.`,
@@ -67,11 +68,12 @@ function photo(c: Ctx): string[] {
 // ---------- TYPO ----------
 function typo(c: Ctx): string[] {
   return [
-    `This is a GRAPHIC POSTER, not a photograph — generate NO photographic subject.`,
+    `This is a DESIGNED GRAPHIC (poster/infographic), not a photograph — generate NO photographic subject (icons and simple illustrated marks are allowed).`,
     `Background treatment: solid brand color / clean tint or subtle geometric blocks (${c.pal.background}); no scene.`,
-    `Layout & hierarchy: ${describeLayout(c.a.layoutSpec, c.format)}. One dominant string; the rest is subordinate.`,
+    `Layout & hierarchy: ${describeLayout(c.a.layoutSpec, c.format)}. Clear dominant element; the supporting elements structured as per the zones.`,
+    `Graphic elements: ${c.a.elements}.`,
     literalBlock(c.onImage),
-    `Typography: bold condensed sans (or brand face), high contrast, tight spacing; ${c.a.do}`,
+    `Typography: bold condensed sans (or brand face), high contrast, tight spacing, key words emphasized; ${c.a.do}`,
     `Accent graphics: ${c.pal.accent || c.pal.cta} for underlines/highlights/badges as per the ACC zones.`,
     ctaLine(c.pal, c.goal),
     `Colors: ${paletteLine(c.pal)}; high contrast text/background.`,
@@ -83,6 +85,7 @@ function hybrid(c: Ctx): string[] {
   return [
     `Photographic background (the model renders ONLY the scene, no text): ${c.a.visual}. Natural, on-brand, not stocky.${antiGlossy(c.model)}`,
     `Declared text zone (mandatory): reserve a clear, low-detail area for the typographic layer — ${describeLayout(c.a.layoutSpec, c.format)}. The text must NOT sit over the subject.`,
+    `Graphic elements of the text layer: ${c.a.elements}.`,
     `Typographic layer, composited over the reserved zone:`,
     literalBlock(c.onImage),
     ctaLine(c.pal, c.goal),
@@ -99,6 +102,7 @@ function uiMock(c: Ctx): string[] {
   return [
     `This is a UI MOCKUP, not a photo: simulate ${iface}.`,
     `UI fidelity: realistic chrome and details; ${c.a.do} Keep a touch of natural imperfection so it looks authentic, not a perfect ad.`,
+    `Graphic elements: ${c.a.elements}.`,
     `Layout: ${describeLayout(c.a.layoutSpec, c.format)}.`,
     literalBlock(c.onImage),
     ctaLine(c.pal, c.goal),
@@ -140,6 +144,7 @@ function assembleDescriptive(c: Ctx, body: string[]): string {
   const literal = literalBlock(c.onImage);
   const base = [
     `${c.a.visual}, ${kind}`,
+    `graphic elements: ${c.a.elements}`,
     `layout: ${describeLayout(c.a.layoutSpec, c.format)}`,
     `palette ${paletteLine(c.pal)}`,
     "high contrast, clear hierarchy, thumbnail-legible",

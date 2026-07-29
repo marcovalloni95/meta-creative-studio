@@ -4,7 +4,37 @@
 
 import type { Archetype, Family, LayoutZone } from "./types";
 
-type Entry = Omit<Archetype, "id">;
+type Entry = Omit<Archetype, "id" | "elements">;
+
+// Vocabolario grafico concreto per archetipo (icone, badge, colonne, pillole,
+// spunte/croci, prezzi barrati, marcatori). Ispirato a creatività Meta reali:
+// rende il prompt una creativita finita e ricca, non un poster minimale.
+const ELEMENTS: Record<string, string> = {
+  "01": "oversized display headline as the hero, one small icon/marker accent, flat brand-color background, bold keywords emphasized in the accent color",
+  "02": "numbered rows inside rounded colored pills/cards, each with a small icon and a one-line label, bold keywords highlighted; a female/subject silhouette or thematic icon per row is common (infographic timeline style)",
+  "03": "a giant number as the hero with a small unit/label, a thin one-line context beneath, an optional supporting icon, tiny source in micro type",
+  "04": "a big question, an X or ? accent mark, 2-3 answer pills below with one highlighted in the accent color",
+  "05": "real portrait, oversized quotation marks, the quote text, a name/role tag, a small 'cliente reale' badge and a row of stars",
+  "06": "a realistic review/chat card with avatar, a 5-star row, timestamp and verified tick, subtle drop shadow, generic (non-branded) UI",
+  "07": "a divider strip with a row of monochrome press/TV logos and a 'come visto su' label",
+  "08": "five large gold stars, a big average score, a review-count line, an optional platform-style badge",
+  "09": "a clean packshot with a soft shadow, product name, a tiny claim, abundant negative space",
+  "10": "the product centered with 2-4 thin leader lines pointing to labeled feature chips with icons",
+  "11": "a split with 'PRIMA' and 'DOPO' pills, a divider line/handle, a result claim ribbon",
+  "12": "3 numbered circular badges with icons connected by a dotted line, short captions under each step",
+  "13": "a knolled grid of the included items, a burst 'valore' badge, a checklist of what's included",
+  "14": "two columns under a header bar, brand logos/mascots at the top of each, green check marks vs red crosses on every criterion row, a central circular 'VS' badge, a price row per column",
+  "15": "two stacked panels: the top 'MITO' with an ✗ and an alert color, the bottom 'REALTÀ' with a ✓ on a brand-color block",
+  "16": "two contrasting halves with icons and labels, a central pill or arrow, the 'right' side on the accent color",
+  "17": "a huge discount/price as the hero, the old price struck through, an urgency badge ('EXPIRING SOON' / countdown pill), a checklist of benefits with ticks, optional small competitor price cards at the bottom",
+  "18": "a circular guarantee seal/badge showing the number of days, a shield or lock icon, a short checklist of reassurances",
+  "19": "a countdown timer or 'ultimi X posti' banner in an alert color, a clock or fire icon, a bold high-contrast CTA",
+  "20": "a masthead-style header, a serif headline, a byline, body text in columns, an inline documentary photo, a discreet 'sponsored' cue",
+  "21": "a full-bleed candid photo, a very short claim, a discreet logo, minimal text",
+  "22": "a reaction photo/frame with bold Impact-style top and bottom captions with an outline, a relatable reference",
+  "23": "a founder portrait, a handwritten-style open letter, a real signature, a small personal CTA",
+  "24": "a top-down knolled composition of the product and contents under soft even light, an optional tiny price tag",
+};
 
 const A: Entry[] = [
   // ---- Famiglia A — Messaggio & Hook (text-heavy, look essenziale) ----
@@ -347,7 +377,11 @@ const A: Entry[] = [
   },
 ];
 
-export const ARCHETYPES: Archetype[] = A.map((e) => ({ ...e, id: `${e.family}${e.code}` }));
+export const ARCHETYPES: Archetype[] = A.map((e) => ({
+  ...e,
+  id: `${e.family}${e.code}`,
+  elements: ELEMENTS[e.code] ?? e.visual,
+}));
 
 export function getArchetype(code: string): Archetype | undefined {
   return ARCHETYPES.find((a) => a.code === code || a.id === code);
