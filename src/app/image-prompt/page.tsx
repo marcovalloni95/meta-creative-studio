@@ -7,6 +7,7 @@ import {
   FAMILY_LABELS,
   FORMAT_SPECS,
   GOAL_LABELS,
+  MODEL_HINT,
   MODEL_LABELS,
   archetypesByFamily,
   generate,
@@ -334,6 +335,9 @@ export default function ImagePromptPage() {
                 </option>
               ))}
             </select>
+            <div className="small" style={{ opacity: 0.7, marginTop: 6 }}>
+              {MODEL_HINT[model]}
+            </div>
           </div>
 
           {/* Palette */}

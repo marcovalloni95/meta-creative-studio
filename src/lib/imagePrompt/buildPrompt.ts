@@ -2,6 +2,7 @@
 // (Nano Banana, ChatGPT, Midjourney, Higgsfield), al formato, alla palette,
 // allo scopo e all'eventuale logo.
 
+import { BEST_PRACTICES, NEGATIVE_DEFAULTS, NEGATIVE_SHORT, ROLE } from "./guidelines";
 import { getLayout } from "./layouts";
 import { renderModeOf } from "./renderModes";
 import { buildTypoSpec, paletteToTypo, specToHtml } from "./typography";
@@ -103,8 +104,9 @@ function buildNaturalPrompt(
   const placement = format === "1:1" ? L.square : L.vertical;
   const cta = CTA_BY_GOAL[goal];
   const lines: string[] = [];
+  lines.push(`Role: ${ROLE}.`);
   lines.push(
-    `Create a static Meta ad creative, ${spec.label} (${spec.px}), archetype "${a.code} ${a.name}" (${a.angle}).`
+    `Task: create a static Meta ad creative, ${spec.label} (${spec.px}), archetype "${a.code} ${a.name}" (${a.angle}).`
   );
   lines.push(`Concept: ${a.visual}.`);
   lines.push(`Composition: ${densityHint(a)}; ${styleHint(a)}.`);
@@ -130,10 +132,11 @@ function buildNaturalPrompt(
   const logoL = logoLine(logo, model);
   if (logoL) lines.push(logoL);
   lines.push(`Goal: ${goal === "leads" ? "lead generation" : goal === "sales" ? "sales/conversion" : "brand awareness"}.`);
+  lines.push(BEST_PRACTICES);
   lines.push(
     backgroundOnly
-      ? `Constraints: photorealistic where people appear; absolutely no text of any kind in the image; no watermark; no invented logos.`
-      : `Constraints: photorealistic where people appear; no watermark; no invented logos; render text exactly as quoted; no misspelled Italian.`
+      ? `Negative: absolutely no text of any kind in the image, ${NEGATIVE_DEFAULTS}.`
+      : `Negative: render text exactly as quoted (no misspelled Italian), ${NEGATIVE_DEFAULTS}.`
   );
   return lines.join("\n");
 }
@@ -163,10 +166,11 @@ function buildDescriptivePrompt(
     ? ` CTA (composited later): ${L.cta} Reserve space for the "${cta}" button in ${pal.cta}.`
     : ` CTA: ${L.cta} Label "${cta}" in ${pal.cta}.`;
   if (model === "midjourney") {
-    return `${base} --ar ${format} --style raw --v 6${backgroundOnly ? " --no text,words,letters" : ""}\n${ctaNote.trim()}`;
+    const no = backgroundOnly ? `text, words, letters, ${NEGATIVE_SHORT}` : NEGATIVE_SHORT;
+    return `${base} --ar ${format} --style raw --v 6 --no ${no}\n${ctaNote.trim()}`;
   }
   // higgsfield: still image mode, cinematic
-  return `${base}. Aspect ratio ${format} (${FORMAT_SPECS[format].px}), still image, cinematic lighting.${ctaNote}${logoL ? " " + logoL : ""}`;
+  return `${base}. Aspect ratio ${format} (${FORMAT_SPECS[format].px}), still image, cinematic lighting.${ctaNote}${logoL ? " " + logoL : ""} Negative: ${NEGATIVE_DEFAULTS}.`;
 }
 
 export function buildFormatPrompt(
