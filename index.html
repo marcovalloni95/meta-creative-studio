@@ -25,7 +25,7 @@
     font-family:var(--sans); line-height:1.5;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:920px; margin:0 auto; padding:32px 20px 80px;}
+  .wrap{max-width:960px; margin:0 auto; padding:32px 20px 80px;}
   header{margin-bottom:32px;}
   header .eyebrow{
     font-family:var(--mono); font-size:12px; letter-spacing:.08em;
@@ -52,7 +52,7 @@
     display:block; font-size:12px; color:var(--text-dim); margin-bottom:5px;
     font-family:var(--mono);
   }
-  input[type=text], input[type=password], input[type=url], select, textarea{
+  input[type=text], input[type=password], input[type=url], input[type=number], select, textarea{
     width:100%; background:var(--panel-2); border:1px solid var(--line);
     color:var(--text); padding:9px 11px; border-radius:6px; font-size:13.5px;
     font-family:var(--sans); margin-bottom:12px;
@@ -91,17 +91,32 @@
     padding:16px 18px; font-family:var(--mono); font-size:13px; color:#c9d4ff;
     white-space:pre-wrap; word-break:break-word; min-height:120px; position:relative;
   }
-  .console .cursor{display:inline-block; width:7px; height:14px; background:var(--accent);
-    vertical-align:middle; animation:blink 1s step-start infinite;}
-  @keyframes blink{50%{opacity:0;}}
   .console .placeholder{color:var(--text-dim);}
 
-  .actions{display:flex; gap:10px; margin-top:14px;}
+  .actions{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
 
   .newproj{
     display:flex; gap:8px; margin-top:-4px; margin-bottom:12px;
   }
   .newproj input{margin-bottom:0;}
+
+  .tip{
+    background:var(--panel-2); border:1px solid var(--accent-dim); border-left:3px solid var(--accent);
+    border-radius:6px; padding:10px 13px; font-size:12.5px; color:var(--text-dim);
+    margin-bottom:14px;
+  }
+  .tip b{color:var(--text);}
+
+  .suggest{
+    font-family:var(--mono); font-size:12px; color:var(--ok);
+    margin:-6px 0 14px;
+  }
+
+  .divider{border:none; border-top:1px solid var(--line); margin:18px 0;}
+  .sub-title{font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text);}
+
+  .checklist{font-size:12.5px; color:var(--text-dim); margin:10px 0 0; padding-left:18px;}
+  .checklist li{margin-bottom:4px;}
 
   footer{color:var(--text-dim); font-size:11.5px; font-family:var(--mono); text-align:center; margin-top:40px;}
 </style>
@@ -112,7 +127,7 @@
   <header>
     <div class="eyebrow">Meta Creative Studio</div>
     <h1>AI Image Prompt Tool</h1>
-    <p>Da un copy Meta Ads a un prompt immagine pronto per Gemini / ChatGPT / Midjourney — dati letti e salvati direttamente su GitHub.</p>
+    <p>Da un copy Meta Ads a un prompt immagine strutturato (Ruolo + Contesto + Task + Negative) — dati letti e salvati direttamente su GitHub.</p>
   </header>
 
   <!-- STEP 1: connessione -->
@@ -169,9 +184,19 @@
     <div class="step">
       <div class="step-head">
         <span class="step-num">03</span>
-        <span class="step-title">Stile visivo</span>
+        <span class="step-title">Stile visivo (Contesto)</span>
       </div>
-      <div class="step-sub">Compila a mano osservando la landing (estrazione automatica non ancora attiva). Resta salvato per il progetto.</div>
+      <div class="step-sub">Compila a mano osservando la landing. Diventa il "Contesto" del prompt: brand, tono, palette.</div>
+      <div class="row">
+        <div>
+          <label for="brandTone">Tono di voce</label>
+          <input type="text" id="brandTone" placeholder="es. diretto e aspirazionale">
+        </div>
+        <div>
+          <label for="brandTarget">Target</label>
+          <input type="text" id="brandTarget" placeholder="es. donne 25-40 appassionate di moda">
+        </div>
+      </div>
       <label for="stylePalette">Palette (colori hex separati da virgola)</label>
       <input type="text" id="stylePalette" placeholder="#1A1A1A, #C9A96E, #F5F0E8">
       <div class="swatchrow" id="swatchPreview"></div>
@@ -197,10 +222,27 @@
     <div class="step">
       <div class="step-head">
         <span class="step-num">04</span>
-        <span class="step-title">Copy & archetipo</span>
+        <span class="step-title">Copy & archetipo (Task)</span>
       </div>
       <label for="copyText">Copy dell'ad</label>
       <textarea id="copyText" placeholder="Incolla qui il copy da cui generare il visual..."></textarea>
+      <div class="row">
+        <div>
+          <label for="selObjective">Obiettivo</label>
+          <select id="selObjective">
+            <option value="performance">Performance advertising</option>
+            <option value="organic">Brand & organico</option>
+          </select>
+        </div>
+        <div>
+          <label for="selFormat">Formato</label>
+          <select id="selFormat">
+            <option value="1:1">1:1</option>
+            <option value="4:5">4:5</option>
+            <option value="9:16">9:16</option>
+          </select>
+        </div>
+      </div>
       <div class="row">
         <div>
           <label for="selFamily">Famiglia</label>
@@ -213,38 +255,52 @@
       </div>
       <div class="row">
         <div>
-          <label for="selFormat">Formato</label>
-          <select id="selFormat">
-            <option value="1:1">1:1</option>
-            <option value="4:5">4:5</option>
-            <option value="9:16">9:16</option>
-          </select>
-        </div>
-        <div>
-          <label for="selModel">Modello</label>
+          <label for="selModel">Modello di generazione</label>
           <select id="selModel">
-            <option value="gemini">Gemini (Nano Banana)</option>
-            <option value="chatgpt">ChatGPT / GPT Image</option>
-            <option value="midjourney">Midjourney</option>
-            <option value="higgsfield">Higgsfield</option>
+            <option value="Gemini (Nano Banana)">Gemini (Nano Banana)</option>
+            <option value="GPT Image">GPT Image</option>
+            <option value="Midjourney">Midjourney</option>
+            <option value="Ideogram">Ideogram</option>
+            <option value="Flux / Firefly">Flux / Firefly</option>
           </select>
         </div>
       </div>
+      <div class="suggest" id="toolSuggest"></div>
     </div>
 
-    <!-- STEP 5: output -->
+    <!-- STEP 5: generazione -->
     <div class="step">
       <div class="step-head">
         <span class="step-num">05</span>
-        <span class="step-title">Prompt generato</span>
+        <span class="step-title">Generazione prompt (Ruolo + Negative)</span>
       </div>
-      <div class="console" id="promptOutput"><span class="placeholder">Compila copy, famiglia e archetipo per generare il prompt...</span></div>
+      <div class="tip">
+        <b>Come nel workshop:</b> il prompt migliore non è un template compilato a metà, è generato da un'AI a partire da un master prompt con Ruolo, Contesto, Task e Negative. Se colleghi una chiave API Claude qui sotto, il prompt viene scritto davvero da Claude in inglese, pronto all'uso. Senza chiave, il tool costruisce comunque un prompt strutturato in italiano (via fallback), ma meno rifinito.
+      </div>
+      <div class="sub-title">Generazione AI (opzionale)</div>
+      <div class="row">
+        <div>
+          <label for="anthropicKey">Chiave API Anthropic</label>
+          <input type="password" id="anthropicKey" placeholder="sk-ant-...">
+        </div>
+        <div>
+          <label for="anthropicModel">Modello</label>
+          <input type="text" id="anthropicModel" placeholder="es. claude-sonnet-4-5 (verifica su docs.claude.com)">
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="console" id="promptOutput"><span class="placeholder">Compila copy, famiglia e archetipo, poi genera il prompt...</span></div>
       <div class="actions">
         <button class="btn-primary" id="btnGenerate">Genera prompt</button>
         <button class="btn-ghost" id="btnCopy">Copia</button>
         <button class="btn-ghost" id="btnSavePrompt">Salva nello storico</button>
       </div>
       <div class="status pending" id="promptStatus"></div>
+      <ul class="checklist">
+        <li>Testo sull'immagine: se puoi togliere una parola, toglila</li>
+        <li>Una sola CTA, un solo elemento protagonista</li>
+        <li>Prima di pubblicare: test con occhio fresco, zoom-out a misura mobile</li>
+      </ul>
     </div>
 
   </div>
@@ -257,7 +313,7 @@ const state = {
   token: null,
   repo: null,
   library: null,
-  clients: {}, // { clientId: [projectId, ...] }
+  clients: {},
   currentClient: null,
   currentProject: null,
   currentStyleSha: null,
@@ -335,17 +391,15 @@ $('btnConnect').addEventListener('click', async () => {
     localStorage.setItem('aipt_token', token);
     localStorage.setItem('aipt_repo', repo);
 
-    // load archetype library
     const lib = await ghGetFile('archetypes/library.json');
     if(!lib) throw new Error('archetypes/library.json non trovato nel repo');
     state.library = lib.content;
     populateFamilies();
 
-    // scan clients/projects from tree
     state.clients = {};
     tree.filter(n => n.type === 'blob' && n.path.startsWith('clients/') && n.path.endsWith('config.json'))
       .forEach(n => {
-        const parts = n.path.split('/'); // clients / clientId / projectId / config.json
+        const parts = n.path.split('/');
         const clientId = parts[1], projectId = parts[2];
         if(!state.clients[clientId]) state.clients[clientId] = [];
         state.clients[clientId].push(projectId);
@@ -359,13 +413,20 @@ $('btnConnect').addEventListener('click', async () => {
   }
 });
 
-// autofill from localStorage
 window.addEventListener('DOMContentLoaded', () => {
   const t = localStorage.getItem('aipt_token');
   const r = localStorage.getItem('aipt_repo');
+  const ak = localStorage.getItem('aipt_anthropic_key');
+  const am = localStorage.getItem('aipt_anthropic_model');
   if(t) $('ghToken').value = t;
   if(r) $('ghRepo').value = r;
+  if(ak) $('anthropicKey').value = ak;
+  if(am) $('anthropicModel').value = am;
+  updateToolSuggest();
 });
+
+$('anthropicKey').addEventListener('change', () => localStorage.setItem('aipt_anthropic_key', $('anthropicKey').value.trim()));
+$('anthropicModel').addEventListener('change', () => localStorage.setItem('aipt_anthropic_model', $('anthropicModel').value.trim()));
 
 // ---------- Step 2: client/project ----------
 function populateClients(){
@@ -419,6 +480,8 @@ async function loadProject(){
       $('styleMood').value = style.content.mood || '';
       $('styleVisualType').value = style.content.visual_type || 'fotografico';
       $('styleNotes').value = style.content.notes || '';
+      $('brandTone').value = style.content.tone || '';
+      $('brandTarget').value = style.content.target || '';
       state.currentStyleSha = style.sha;
       renderSwatches();
     }
@@ -440,7 +503,7 @@ $('btnNewProject').addEventListener('click', async () => {
     landing_url: '', default_model: 'gemini',
     formats: ['1:1','9:16'], created_at: today, updated_at: today
   };
-  const style = { extracted_at: null, source_url: null, palette: [], mood: null, visual_type: null, notes: null };
+  const style = { extracted_at: null, source_url: null, palette: [], mood: null, visual_type: null, notes: null, tone: null, target: null };
   try{
     await ghPutFile(`clients/${clientId}/${projectId}/config.json`, config, null, `Crea progetto ${clientId}/${projectId}`);
     await ghPutFile(`clients/${clientId}/${projectId}/style.json`, style, null, `Crea style.json ${clientId}/${projectId}`);
@@ -496,7 +559,9 @@ $('btnSaveStyle').addEventListener('click', async () => {
     palette: $('stylePalette').value.split(',').map(s=>s.trim()).filter(Boolean),
     mood: $('styleMood').value.trim() || null,
     visual_type: $('styleVisualType').value,
-    notes: $('styleNotes').value.trim() || null
+    notes: $('styleNotes').value.trim() || null,
+    tone: $('brandTone').value.trim() || null,
+    target: $('brandTarget').value.trim() || null
   };
   try{
     const res = await ghPutFile(`clients/${client}/${project}/style.json`, style, state.currentStyleSha, `Aggiorna stile ${client}/${project}`);
@@ -507,7 +572,7 @@ $('btnSaveStyle').addEventListener('click', async () => {
   }
 });
 
-// ---------- Step 4: family/archetype ----------
+// ---------- Step 4: family/archetype/objective ----------
 function populateFamilies(){
   const sel = $('selFamily');
   sel.innerHTML = '';
@@ -528,50 +593,197 @@ function populateArchetypes(){
     opt.value = a.id; opt.textContent = `${a.number}. ${a.name}`;
     sel.appendChild(opt);
   });
+  updateToolSuggest();
 }
 $('selFamily').addEventListener('change', populateArchetypes);
+$('selArchetype').addEventListener('change', updateToolSuggest);
+$('selObjective').addEventListener('change', updateToolSuggest);
 
-// ---------- Step 5: generate/save prompt ----------
+// Suggerimento tool basato sulla tabella "I tool per generare immagini con AI" del workshop
+function updateToolSuggest(){
+  const arch = currentArchetype();
+  const objective = $('selObjective') ? $('selObjective').value : 'performance';
+  const box = $('toolSuggest');
+  if(!box) return;
+  if(!arch){ box.textContent = ''; return; }
+
+  let suggestion = '';
+  if(objective === 'performance'){
+    if(arch.text_density === 'text-heavy' && (arch.family_hint !== 'native')) {
+      suggestion = "Ideogram — testo leggibile integrato nell'immagine";
+    } else if(['product-hero','feature-callout','before-after'].includes(arch.id)){
+      suggestion = 'GPT Image — coerenza visiva prodotto + contesto lifestyle';
+    } else {
+      suggestion = 'Nano Banana o Canva AI — varianti rapide per A/B test';
+    }
+  } else {
+    if(['lifestyle-aspirazionale','meme-relatable','founder-note'].includes(arch.id)){
+      suggestion = 'Midjourney — qualità artistica per contenuti organici';
+    } else if(['product-hero','flat-lay-unboxing'].includes(arch.id)){
+      suggestion = 'Flux / Firefly — realismo fotografico su sfondo neutro';
+    } else if(arch.text_density === 'text-heavy'){
+      suggestion = 'Ideogram v3 — testo ultra-preciso per copy integrato lungo';
+    } else {
+      suggestion = 'GPT Image — asset coerenti con la KB del brand';
+    }
+  }
+  box.textContent = '→ Consiglio dal workshop: ' + suggestion;
+}
+
 function currentArchetype(){
+  if(!state.library) return null;
   const famId = $('selFamily').value;
   const fam = state.library.families.find(f => f.id === famId);
   if(!fam) return null;
   return fam.archetypes.find(a => a.id === $('selArchetype').value);
 }
 
-function buildPrompt(){
+// ---------- Step 5: prompt generation ----------
+const UNIVERSAL_NEGATIVES = [
+  'testo distorto o illeggibile',
+  'bassa risoluzione',
+  'mani o volti deformi',
+  'watermark',
+  'loghi non richiesti',
+  'aspetto da stock photo generica'
+];
+
+function buildMasterPrompt(){
   const arch = currentArchetype();
-  if(!arch) return null;
+  const fam = state.library.families.find(f => f.archetypes.some(a => a.id === arch.id));
+  const client = state.currentClient || '(cliente)';
+  const project = state.currentProject || '(progetto)';
+  const palette = $('stylePalette').value.trim() || '(non impostata)';
+  const mood = $('styleMood').value.trim() || '(non impostato)';
+  const visualType = $('styleVisualType').value;
+  const tone = $('brandTone').value.trim() || '(non impostato)';
+  const target = $('brandTarget').value.trim() || '(non impostato)';
   const format = $('selFormat').value;
-  const palette = $('stylePalette').value.trim();
-  const mood = $('styleMood').value.trim();
-  let out = arch.prompt_template;
-  out = out.replaceAll('[FORMATO]', format);
-  out = out.replaceAll('[PALETTE_PRIMARIA]', palette.split(',')[0]?.trim() || palette || '(palette non impostata)');
-  out = out.replaceAll('[PALETTE]', palette || '(palette non impostata)');
-  out = out.replaceAll('[MOOD]', mood || '(mood non impostato)');
+  const model = $('selModel').value;
+  const copy = $('copyText').value.trim();
+
+  const negatives = UNIVERSAL_NEGATIVES.concat(arch.dont ? [arch.dont] : []);
+
+  return `Sei un art director specializzato in advertising, esperto nella scrittura di prompt per modelli di generazione immagine AI (${model}).
+
+CONTESTO
+- Brand/cliente: ${client} (progetto: ${project})
+- Tono di voce: ${tone}
+- Target: ${target}
+- Palette colori: ${palette}
+- Mood/stile: ${mood}
+- Tipo visivo: ${visualType}
+
+ARCHETIPO CREATIVO (dal Manuale delle Statiche)
+- Famiglia: ${fam.name}
+- Archetipo: ${arch.name} — ${arch.description}
+- Cosa deve contenere: ${arch.copy_required}
+- Fai: ${arch.do}
+- Non fare: ${arch.dont}
+
+COPY DELL'AD (estrai da qui gli elementi visivi: hook, numero, prodotto, claim)
+"""
+${copy || '(nessun copy fornito)'}
+"""
+
+TASK
+Scrivi il prompt di generazione immagine per ${model}, formato ${format}, che traduca copy e archetipo in una descrizione visiva precisa: soggetto, ambientazione, inquadratura, luce, palette, stile fotografico o tipografico secondo l'archetipo scelto. Se l'archetipo è tipografico, descrivi la composizione testuale (gerarchia, posizione, font suggerito) invece di una scena fotografica.
+
+FORMATO OUTPUT
+- Scrivi il prompt in inglese (standard per i modelli di generazione immagine)
+- Massimo 150 parole
+- Restituisci SOLO il prompt finale, nessuna spiegazione, nessun preambolo
+
+NEGATIVE (includi sempre, tradotto in inglese, in fondo al prompt)
+${negatives.map(n => '- ' + n).join('\n')}`;
+}
+
+function buildFallbackPrompt(){
+  const arch = currentArchetype();
+  const fam = state.library.families.find(f => f.archetypes.some(a => a.id === arch.id));
+  const palette = $('stylePalette').value.trim() || '(palette non impostata)';
+  const mood = $('styleMood').value.trim() || '(mood non impostato)';
+  const tone = $('brandTone').value.trim();
+  const target = $('brandTarget').value.trim();
+  const format = $('selFormat').value;
+  const model = $('selModel').value;
+  const copy = $('copyText').value.trim();
+  const negatives = UNIVERSAL_NEGATIVES.concat(arch.dont ? [arch.dont] : []);
+
+  let out = `RUOLO
+Art director specializzato in advertising, per il modello ${model}.
+
+`;
+  out += `CONTESTO
+Tono: ${tone || '(non impostato)'} · Target: ${target || '(non impostato)'} · Palette: ${palette} · Mood: ${mood}
+
+`;
+  out += `TASK (archetipo: ${fam.name} → ${arch.name})
+${arch.prompt_template.replaceAll('[FORMATO]', format).replaceAll('[PALETTE_PRIMARIA]', palette.split(',')[0]?.trim() || palette).replaceAll('[PALETTE]', palette).replaceAll('[MOOD]', mood)}
+
+`;
+  if(copy){
+    out += `COPY DI RIFERIMENTO (estrai qui hook/numero/claim per riempire eventuali placeholder [ ] rimasti sopra)
+${copy}
+
+`;
+  }
+  out += `NEGATIVE
+${negatives.map(n => '- ' + n).join('
+')}`;
   return out;
 }
 
-$('btnGenerate').addEventListener('click', () => {
+async function callClaude(apiKey, model, userPrompt){
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: model,
+      max_tokens: 500,
+      messages: [{ role: 'user', content: userPrompt }]
+    })
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({}));
+    throw new Error((err.error && err.error.message) || `Anthropic API -> ${res.status}`);
+  }
+  const data = await res.json();
+  return data.content.map(b => b.text || '').join('').trim();
+}
+
+$('btnGenerate').addEventListener('click', async () => {
   const arch = currentArchetype();
   const box = $('promptOutput');
   if(!arch){
     box.innerHTML = '<span class="placeholder">Seleziona famiglia e archetipo.</span>';
     return;
   }
-  const prompt = buildPrompt();
-  const copy = $('copyText').value.trim();
-  let html = escapeHtml(prompt);
-  if(copy){
-    html += `\n\n---\nCopy sorgente (per riferimento manuale sui placeholder rimasti tra [ ]):\n${escapeHtml(copy)}`;
-  }
-  box.textContent = prompt + (copy ? `\n\n---\nCopy sorgente (per riferimento manuale sui placeholder rimasti tra [ ]):\n${copy}` : '');
-});
+  const apiKey = $('anthropicKey').value.trim();
+  const model = $('anthropicModel').value.trim();
 
-function escapeHtml(s){
-  return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-}
+  if(apiKey && model){
+    setStatus($('promptStatus'), 'Generazione con Claude in corso...', 'pending');
+    box.textContent = '...';
+    try{
+      const master = buildMasterPrompt();
+      const result = await callClaude(apiKey, model, master);
+      box.textContent = result;
+      setStatus($('promptStatus'), 'Prompt generato da Claude.', 'ok');
+    }catch(e){
+      setStatus($('promptStatus'), 'Errore Claude: ' + e.message + ' — uso il fallback.', 'err');
+      box.textContent = buildFallbackPrompt();
+    }
+  } else {
+    box.textContent = buildFallbackPrompt();
+    setStatus($('promptStatus'), 'Prompt strutturato generato (fallback, senza AI — inserisci una chiave Anthropic per un risultato rifinito in inglese).', 'pending');
+  }
+});
 
 $('btnCopy').addEventListener('click', () => {
   const text = $('promptOutput').textContent;
@@ -587,8 +799,8 @@ $('btnSavePrompt').addEventListener('click', async () => {
     setStatus($('promptStatus'), 'Seleziona progetto e archetipo prima di salvare.', 'err');
     return;
   }
-  const prompt = buildPrompt();
-  if(!prompt){
+  const promptText = $('promptOutput').textContent;
+  if(!promptText || promptText.includes('Compila copy')){
     setStatus($('promptStatus'), 'Genera il prompt prima di salvarlo.', 'err');
     return;
   }
@@ -603,7 +815,8 @@ $('btnSavePrompt').addEventListener('click', async () => {
     archetype: { family: fam.name, name: arch.name },
     format: $('selFormat').value,
     model: $('selModel').value,
-    prompt_output: prompt,
+    objective: $('selObjective').value,
+    prompt_output: promptText,
     performance_note: null
   };
   try{
