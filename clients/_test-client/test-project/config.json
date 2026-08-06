@@ -1,0 +1,9 @@
+{
+    "client": "_test-client",
+    "project": "test-project",
+    "landing_url": "https://example.com",
+    "default_model": "gemini",
+    "formats": ["1:1", "9:16"],
+    "created_at": "2026-08-05",
+    "updated_at": "2026-08-05"
+}
