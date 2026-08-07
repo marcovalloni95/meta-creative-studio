@@ -92,12 +92,12 @@
             "hook",
             "soluzione"
           ],
-          "description": "Headline con il problema in alto, sub-headline con la soluzione subito sotto, CTA nella parte inferiore, su sfondo fotografico rappresentativo del contesto.",
-          "copy_required": "Headline con il problema (per esteso in alto, oppure allineata in alto a destra), sub-headline con la soluzione subito sotto l'headline, CTA nella parte inferiore della grafica",
+          "description": "Nomina il problema in headline, promette la soluzione in sub, chiude con la CTA.",
+          "copy_required": "Headline con il problema, sub-headline con la soluzione, CTA finale",
           "text_density": "text-heavy",
           "do": "Contrasto forte tra headline e sfondo per leggibilità, sub-headline visivamente subordinata (corpo minore/peso minore) rispetto all'headline, CTA isolata e ben leggibile in basso",
           "dont": "Non affollare lo sfondo con altri elementi che competano con l'headline, non usare più di un problema/soluzione per creatività, non nascondere la CTA dentro la scena",
-          "prompt_template": "Immagine fotografica rappresentativa del contesto come sfondo, headline con il problema [PROBLEMA] in alto (per esteso o allineata a destra), sub-headline con la soluzione [SOLUZIONE] subito sotto, CTA [CTA] nella parte inferiore della grafica, palette [PALETTE], formato [FORMATO]"
+          "prompt_template": "Fotografia di contesto come sfondo, headline problema [PROBLEMA] in alto, sub-headline soluzione [SOLUZIONE] sotto, CTA [CTA] in basso, palette [PALETTE], formato [FORMATO]"
         }
       ]
     },
