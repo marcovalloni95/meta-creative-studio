@@ -1,7 +1,7 @@
 {
   "client": "wedding revolution",
   "project": "matrimoney tour",
-  "landing_url": "",
+  "landing_url": "https://weddingsummit.it/matrimoney-tour/",
   "default_model": "gemini",
   "formats": [
     "1:1",
