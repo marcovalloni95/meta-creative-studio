@@ -1,301 +1,390 @@
 {
-    "_meta": {
-          "source": "Manuale delle Statiche v1.03 - Reparto Creativo Meta Ads",
-          "leve": {
-                  "densita_testo": ["image-led", "text-heavy"],
-                  "stile_visivo": ["native-raw", "designed"],
-                  "funzione_angolo": ["razionale", "emotivo"]
-          },
-          "formati_richiesti": ["1:1", "4:5", "9:16"],
-          "regole_trasversali": [
-                  "testo principale leggibile a 200px di larghezza",
-                  "contrasto alto tra testo e sfondo",
-                  "evitare di affollare di testo oltre il 20% della superficie nelle versioni image-led",
-                  "ogni concetto esiste in tutti i formati richiesti prima di considerarsi completo"
-          ]
+  "_meta": {
+    "source": "Manuale delle Statiche v1.03 - Reparto Creativo Meta Ads",
+    "leve": {
+      "densita_testo": [
+        "image-led",
+        "text-heavy"
+      ],
+      "stile_visivo": [
+        "native-raw",
+        "designed"
+      ],
+      "funzione_angolo": [
+        "razionale",
+        "emotivo"
+      ]
     },
-    "families": [
-          {
-                  "id": "messaggio-hook",
-                  "name": "Messaggio & Hook",
-                  "description": "Statiche guidate dalla parola. Fermano lo scroll con un'idea, una frase, un numero.",
-                  "archetypes": [
-                            {
-                                        "id": "big-statement",
-                                        "number": 1,
-                                        "name": "Big Statement",
-                                        "tags": ["hook", "curiosita"],
-                                        "description": "Una sola frase forte al centro. Il claim e la creativita.",
-                                        "copy_required": "L'headline piu forte dell'ad, tagliata a 5-9 parole",
-                                        "text_density": "text-heavy",
-                                        "prompt_template": "Composizione tipografica minimale, headline enorme centrata: [HOOK], sfondo [PALETTE_PRIMARIA] pulito, formato [FORMATO]"
-                            },
-                            {
-                                        "id": "listicle",
-                                        "number": 2,
-                                        "name": "Listicle",
-                                        "tags": ["hook", "valore"],
-                                        "description": "Lista breve numerata, 3-5 voci.",
-                                        "copy_required": "Titolo a contatore, 3-5 voci da una riga ciascuna",
-                                        "text_density": "text-heavy",
-                                        "prompt_template": "Layout lista numerata verticale, titolo [TITOLO_CONTATORE], 3-5 righe brevi, palette [PALETTE], formato [FORMATO]"
-                            },
-                            {
-                                        "id": "statistica-big-number",
-                                        "number": 3,
-                                        "name": "Statistica / Big Number",
-                                        "tags": ["logica", "prova"],
-                                        "description": "Un dato che sorprende, gigante.",
-                                        "copy_required": "Il numero/percentuale chiave, una riga di contesto sotto",
-                                        "text_density": "image-led",
-                                        "prompt_template": "Numero gigante [NUMERO] centrato, riga contesto [CONTESTO] sotto, sfondo [PALETTE_PRIMARIA], formato [FORMATO]"
-                            },
-                            {
-                                        "id": "domanda-quiz",
-                                        "number": 4,
-                                        "name": "Domanda / Quiz",
-                                        "tags": ["engagement"],
-                                        "description": "Interpella chi guarda con una domanda diretta.",
-                                        "copy_required": "La domanda diretta, 2-3 opzioni o un cliffhanger",
-                                        "text_density": "text-heavy",
-                                        "prompt_template": "Domanda [DOMANDA] in alto, 2-3 opzioni sotto stile quiz, palette [PALETTE], formato [FORMATO]"
-                            }
-                  ]
-          },
-          {
-                  "id": "prova-credibilita",
-                  "name": "Prova & Credibilita",
-                  "description": "Statiche che spostano la fiducia: prova sociale e autorita.",
-                  "archetypes": [
-                            {
-                                        "id": "testimonianza",
-                                        "number": 5,
-                                        "name": "Testimonianza",
-                                        "tags": ["prova sociale"],
-                                        "description": "Una citazione del cliente messa in evidenza.",
-                                        "copy_required": "Quote del cliente (breve), nome/ruolo",
-                                        "text_density": "text-heavy",
-                                        "prompt_template": "Card con quote [QUOTE] tra virgolette, avatar a sinistra, nome/ruolo sotto, palette [PALETTE], formato [FORMATO]"
-                            },
-                            {
-                                        "id": "screenshot-recensione",
-                                        "number": 6,
-                                        "name": "Screenshot recensione",
-                                        "tags": ["prova", "native"],
-                                        "description": "Finge un contenuto reale: chat, tweet, recensione store.",
-                                        "copy_required": "Testo del messaggio/recensione, username o rating",
-                                        "text_density": "text-heavy",
-                                        "prompt_template": "Mockup screenshot nativo, testo [TESTO_RECENSIONE], username e rating, formato [FORMATO], look non ritoccato"
-},
+    "formati_richiesti": [
+      "1:1",
+      "4:5",
+      "9:16"
+    ],
+    "regole_trasversali": [
+      "testo principale leggibile a 200px di larghezza",
+      "contrasto alto tra testo e sfondo",
+      "evitare di affollare di testo oltre il 20% della superficie nelle versioni image-led",
+      "ogni concetto esiste in tutti i formati richiesti prima di considerarsi completo"
+    ]
+  },
+  "families": [
+    {
+      "id": "messaggio-hook",
+      "name": "Messaggio & Hook",
+      "description": "Statiche guidate dalla parola. Fermano lo scroll con un'idea, una frase, un numero.",
+      "archetypes": [
         {
-                    "id": "as-seen-in-press",
-                    "number": 7,
-                    "name": "As seen in / Press",
-                    "tags": ["autorita"],
-                    "description": "Loghi di testate o badge consigliato da.",
-                    "copy_required": "Headline di autorita, loghi/testate",
-                    "text_density": "image-led",
-                    "prompt_template": "Headline autorita [HEADLINE_AUTORITA] in alto, fascia loghi sotto, palette [PALETTE], formato [FORMATO]"
+          "id": "big-statement",
+          "number": 1,
+          "name": "Big Statement",
+          "tags": [
+            "hook",
+            "curiosita"
+          ],
+          "description": "Una sola frase forte al centro. Il claim e la creativita.",
+          "copy_required": "L'headline piu forte dell'ad, tagliata a 5-9 parole",
+          "text_density": "text-heavy",
+          "prompt_template": "Composizione tipografica minimale, headline enorme centrata: [HOOK], sfondo [PALETTE_PRIMARIA] pulito, formato [FORMATO]"
         },
         {
-                    "id": "rating-aggregato",
-                    "number": 8,
-                    "name": "Rating aggregato",
-                    "tags": ["prova", "sintesi"],
-                    "description": "Stelle + numero di recensioni in evidenza.",
-                    "copy_required": "Voto medio, numero recensioni",
-                    "text_density": "image-led",
-                    "prompt_template": "Stelle rating grandi, voto [VOTO] e numero [N_RECENSIONI] sotto, sfondo [PALETTE_PRIMARIA], formato [FORMATO]"
+          "id": "listicle",
+          "number": 2,
+          "name": "Listicle",
+          "tags": [
+            "hook",
+            "valore"
+          ],
+          "description": "Lista breve numerata, 3-5 voci.",
+          "copy_required": "Titolo a contatore, 3-5 voci da una riga ciascuna",
+          "text_density": "text-heavy",
+          "prompt_template": "Layout lista numerata verticale, titolo [TITOLO_CONTATORE], 3-5 righe brevi, palette [PALETTE], formato [FORMATO]"
+        },
+        {
+          "id": "statistica-big-number",
+          "number": 3,
+          "name": "Statistica / Big Number",
+          "tags": [
+            "logica",
+            "prova"
+          ],
+          "description": "Un dato che sorprende, gigante.",
+          "copy_required": "Il numero/percentuale chiave, una riga di contesto sotto",
+          "text_density": "image-led",
+          "prompt_template": "Numero gigante [NUMERO] centrato, riga contesto [CONTESTO] sotto, sfondo [PALETTE_PRIMARIA], formato [FORMATO]"
+        },
+        {
+          "id": "domanda-quiz",
+          "number": 4,
+          "name": "Domanda / Quiz",
+          "tags": [
+            "engagement"
+          ],
+          "description": "Interpella chi guarda con una domanda diretta.",
+          "copy_required": "La domanda diretta, 2-3 opzioni o un cliffhanger",
+          "text_density": "text-heavy",
+          "prompt_template": "Domanda [DOMANDA] in alto, 2-3 opzioni sotto stile quiz, palette [PALETTE], formato [FORMATO]"
+        },
+        {
+          "id": "problema-soluzione",
+          "number": 5,
+          "name": "Problema-Soluzione",
+          "tags": [
+            "hook",
+            "soluzione"
+          ],
+          "description": "Headline con il problema in alto, sub-headline con la soluzione subito sotto, CTA nella parte inferiore, su sfondo fotografico rappresentativo del contesto.",
+          "copy_required": "Headline con il problema (per esteso in alto, oppure allineata in alto a destra), sub-headline con la soluzione subito sotto l'headline, CTA nella parte inferiore della grafica",
+          "text_density": "text-heavy",
+          "do": "Contrasto forte tra headline e sfondo per leggibilità, sub-headline visivamente subordinata (corpo minore/peso minore) rispetto all'headline, CTA isolata e ben leggibile in basso",
+          "dont": "Non affollare lo sfondo con altri elementi che competano con l'headline, non usare più di un problema/soluzione per creatività, non nascondere la CTA dentro la scena",
+          "prompt_template": "Immagine fotografica rappresentativa del contesto come sfondo, headline con il problema [PROBLEMA] in alto (per esteso o allineata a destra), sub-headline con la soluzione [SOLUZIONE] subito sotto, CTA [CTA] nella parte inferiore della grafica, palette [PALETTE], formato [FORMATO]"
         }
-]
-},
-    {
-            "id": "prodotto-dimostrazione",
-            "name": "Prodotto & Dimostrazione",
-            "description": "Statiche che mostrano il prodotto, come funziona, cosa cambia.",
-            "archetypes": [
-                      {
-                                  "id": "product-hero",
-                                  "number": 9,
-                                  "name": "Product Hero",
-                                  "tags": ["desiderio"],
-                                  "description": "Il prodotto protagonista, pulito, ben illuminato.",
-                                  "copy_required": "Nome prodotto, mini-claim opzionale",
-                                  "text_density": "image-led",
-                                  "prompt_template": "Fotografia prodotto [PRODOTTO] centrata grande, illuminazione pulita, sfondo [PALETTE_PRIMARIA], formato [FORMATO]"
-                      },
-                      {
-                                  "id": "feature-callout",
-                                  "number": 10,
-                                  "name": "Feature Callout",
-                                  "tags": ["beneficio", "logica"],
-                                  "description": "Prodotto con frecce/etichette sulle caratteristiche.",
-                                  "copy_required": "2-4 feature in una parola, beneficio per ciascuna",
-                                  "text_density": "text-heavy",
-                                  "prompt_template": "Prodotto [PRODOTTO] con linee guida a feature [FEATURE_1] [FEATURE_2], layout ordinato, formato [FORMATO]"
+      ]
     },
-        {
-                    "id": "before-after",
-                    "number": 11,
-                    "name": "Before / After",
-                    "tags": ["pain", "trasformazione"],
-                    "description": "Split che mostra il prima e il dopo.",
-                    "copy_required": "Etichetta Prima/Dopo, claim del risultato",
-                    "text_density": "text-heavy",
-                    "prompt_template": "Split screen [PRIMA]/[DOPO], stessa inquadratura, claim [CLAIM] in basso, formato [FORMATO]"
-        },
-        {
-                    "id": "how-it-works-step",
-                    "number": 12,
-                    "name": "How it works / Step",
-                    "tags": ["logica", "chiarezza"],
-                    "description": "Il processo in 3 passi numerati.",
-                    "copy_required": "3 step in poche parole, eventuale icona per step",
-                    "text_density": "text-heavy",
-                    "prompt_template": "3 step numerati in sequenza [STEP_1] [STEP_2] [STEP_3], frecce collegamento, formato [FORMATO]"
-        },
-        {
-                    "id": "cosa-include-bundle",
-                    "number": 13,
-                    "name": "Cosa include / Bundle",
-                    "tags": ["valore percepito"],
-                    "description": "Tutti gli elementi inclusi, disposti a vista.",
-                    "copy_required": "Lista dei componenti, valore totale opzionale",
-                    "text_density": "text-heavy",
-                    "prompt_template": "Flat lay componenti bundle [LISTA_COMPONENTI], gerarchia chiara, formato [FORMATO]"
-        }
-]
-},
     {
-            "id": "confronto-logica",
-            "name": "Confronto & Logica",
-            "description": "Statiche che ragionano: confronto, obiezioni, scelta.",
-            "archetypes": [
-                      {
-                                  "id": "comparison-noi-vs-loro",
-                                  "number": 14,
-                                  "name": "Comparison / Noi vs Loro",
-                                  "tags": ["differenziazione"],
-                                  "description": "Tabella che confronta te con l'alternativa.",
-                                  "copy_required": "3-5 criteri, spunte vs croci",
-                                  "text_density": "text-heavy",
-                                  "prompt_template": "Tabella comparativa due colonne, criteri [CRITERIO_1..5], spunte vs croci, formato [FORMATO]"
+      "id": "prova-credibilita",
+      "name": "Prova & Credibilita",
+      "description": "Statiche che spostano la fiducia: prova sociale e autorita.",
+      "archetypes": [
+        {
+          "id": "testimonianza",
+          "number": 5,
+          "name": "Testimonianza",
+          "tags": [
+            "prova sociale"
+          ],
+          "description": "Una citazione del cliente messa in evidenza.",
+          "copy_required": "Quote del cliente (breve), nome/ruolo",
+          "text_density": "text-heavy",
+          "prompt_template": "Card con quote [QUOTE] tra virgolette, avatar a sinistra, nome/ruolo sotto, palette [PALETTE], formato [FORMATO]"
+        },
+        {
+          "id": "screenshot-recensione",
+          "number": 6,
+          "name": "Screenshot recensione",
+          "tags": [
+            "prova",
+            "native"
+          ],
+          "description": "Finge un contenuto reale: chat, tweet, recensione store.",
+          "copy_required": "Testo del messaggio/recensione, username o rating",
+          "text_density": "text-heavy",
+          "prompt_template": "Mockup screenshot nativo, testo [TESTO_RECENSIONE], username e rating, formato [FORMATO], look non ritoccato"
+        },
+        {
+          "id": "as-seen-in-press",
+          "number": 7,
+          "name": "As seen in / Press",
+          "tags": [
+            "autorita"
+          ],
+          "description": "Loghi di testate o badge consigliato da.",
+          "copy_required": "Headline di autorita, loghi/testate",
+          "text_density": "image-led",
+          "prompt_template": "Headline autorita [HEADLINE_AUTORITA] in alto, fascia loghi sotto, palette [PALETTE], formato [FORMATO]"
+        },
+        {
+          "id": "rating-aggregato",
+          "number": 8,
+          "name": "Rating aggregato",
+          "tags": [
+            "prova",
+            "sintesi"
+          ],
+          "description": "Stelle + numero di recensioni in evidenza.",
+          "copy_required": "Voto medio, numero recensioni",
+          "text_density": "image-led",
+          "prompt_template": "Stelle rating grandi, voto [VOTO] e numero [N_RECENSIONI] sotto, sfondo [PALETTE_PRIMARIA], formato [FORMATO]"
+        }
+      ]
     },
-        {
-                    "id": "mito-vs-realta",
-                    "number": 15,
-                    "name": "Mito vs Realta",
-                    "tags": ["obiezione"],
-                    "description": "Smonta una credenza falsa del target.",
-                    "copy_required": "Il mito (riga 1), la realta (riga 2)",
-                    "text_density": "text-heavy",
-                    "prompt_template": "Due blocchi impilati MITO [MITO] / REALTA [REALTA], contrasto sfondo, formato [FORMATO]"
-        },
-        {
-                    "id": "this-or-that",
-                    "number": 16,
-                    "name": "This or That",
-                    "tags": ["identificazione"],
-                    "description": "Due opzioni a confronto.",
-                    "copy_required": "Le 2 opzioni, la spinta verso la scelta giusta",
-                    "text_density": "text-heavy",
-                    "prompt_template": "Split verticale due colonne [OPZIONE_A]/[OPZIONE_B], contrasto netto, formato [FORMATO]"
-        }
-]
-        },
     {
-            "id": "offerta-conversione",
-            "name": "Offerta & Conversione",
-            "description": "Statiche da fondo funnel: offerta, garanzia, urgenza.",
-            "archetypes": [
-                      {
-                                  "id": "offerta-promo",
-                                  "number": 17,
-                                  "name": "Offerta / Promo",
-                                  "tags": ["incentivo"],
-                                  "description": "Sconto, prezzo o promo come messaggio centrale.",
-                                  "copy_required": "L'offerta esatta, CTA + eventuale codice",
-                                  "text_density": "text-heavy",
-                                  "prompt_template": "Offerta [OFFERTA] grande centrale, codice/scadenza, CTA visibile, palette alto contrasto, formato [FORMATO]"
+      "id": "prodotto-dimostrazione",
+      "name": "Prodotto & Dimostrazione",
+      "description": "Statiche che mostrano il prodotto, come funziona, cosa cambia.",
+      "archetypes": [
+        {
+          "id": "product-hero",
+          "number": 9,
+          "name": "Product Hero",
+          "tags": [
+            "desiderio"
+          ],
+          "description": "Il prodotto protagonista, pulito, ben illuminato.",
+          "copy_required": "Nome prodotto, mini-claim opzionale",
+          "text_density": "image-led",
+          "prompt_template": "Fotografia prodotto [PRODOTTO] centrata grande, illuminazione pulita, sfondo [PALETTE_PRIMARIA], formato [FORMATO]"
         },
-                      {
-                                  "id": "garanzia-risk-reversal",
-                                  "number": 18,
+        {
+          "id": "feature-callout",
+          "number": 10,
+          "name": "Feature Callout",
+          "tags": [
+            "beneficio",
+            "logica"
+          ],
+          "description": "Prodotto con frecce/etichette sulle caratteristiche.",
+          "copy_required": "2-4 feature in una parola, beneficio per ciascuna",
+          "text_density": "text-heavy",
+          "prompt_template": "Prodotto [PRODOTTO] con linee guida a feature [FEATURE_1] [FEATURE_2], layout ordinato, formato [FORMATO]"
+        },
+        {
+          "id": "before-after",
+          "number": 11,
+          "name": "Before / After",
+          "tags": [
+            "pain",
+            "trasformazione"
+          ],
+          "description": "Split che mostra il prima e il dopo.",
+          "copy_required": "Etichetta Prima/Dopo, claim del risultato",
+          "text_density": "text-heavy",
+          "prompt_template": "Split screen [PRIMA]/[DOPO], stessa inquadratura, claim [CLAIM] in basso, formato [FORMATO]"
+        },
+        {
+          "id": "how-it-works-step",
+          "number": 12,
+          "name": "How it works / Step",
+          "tags": [
+            "logica",
+            "chiarezza"
+          ],
+          "description": "Il processo in 3 passi numerati.",
+          "copy_required": "3 step in poche parole, eventuale icona per step",
+          "text_density": "text-heavy",
+          "prompt_template": "3 step numerati in sequenza [STEP_1] [STEP_2] [STEP_3], frecce collegamento, formato [FORMATO]"
+        },
+        {
+          "id": "cosa-include-bundle",
+          "number": 13,
+          "name": "Cosa include / Bundle",
+          "tags": [
+            "valore percepito"
+          ],
+          "description": "Tutti gli elementi inclusi, disposti a vista.",
+          "copy_required": "Lista dei componenti, valore totale opzionale",
+          "text_density": "text-heavy",
+          "prompt_template": "Flat lay componenti bundle [LISTA_COMPONENTI], gerarchia chiara, formato [FORMATO]"
+        }
+      ]
+    },
+    {
+      "id": "confronto-logica",
+      "name": "Confronto & Logica",
+      "description": "Statiche che ragionano: confronto, obiezioni, scelta.",
+      "archetypes": [
+        {
+          "id": "comparison-noi-vs-loro",
+          "number": 14,
+          "name": "Comparison / Noi vs Loro",
+          "tags": [
+            "differenziazione"
+          ],
+          "description": "Tabella che confronta te con l'alternativa.",
+          "copy_required": "3-5 criteri, spunte vs croci",
+          "text_density": "text-heavy",
+          "prompt_template": "Tabella comparativa due colonne, criteri [CRITERIO_1..5], spunte vs croci, formato [FORMATO]"
+        },
+        {
+          "id": "mito-vs-realta",
+          "number": 15,
+          "name": "Mito vs Realta",
+          "tags": [
+            "obiezione"
+          ],
+          "description": "Smonta una credenza falsa del target.",
+          "copy_required": "Il mito (riga 1), la realta (riga 2)",
+          "text_density": "text-heavy",
+          "prompt_template": "Due blocchi impilati MITO [MITO] / REALTA [REALTA], contrasto sfondo, formato [FORMATO]"
+        },
+        {
+          "id": "this-or-that",
+          "number": 16,
+          "name": "This or That",
+          "tags": [
+            "identificazione"
+          ],
+          "description": "Due opzioni a confronto.",
+          "copy_required": "Le 2 opzioni, la spinta verso la scelta giusta",
+          "text_density": "text-heavy",
+          "prompt_template": "Split verticale due colonne [OPZIONE_A]/[OPZIONE_B], contrasto netto, formato [FORMATO]"
+        }
+      ]
+    },
+    {
+      "id": "offerta-conversione",
+      "name": "Offerta & Conversione",
+      "description": "Statiche da fondo funnel: offerta, garanzia, urgenza.",
+      "archetypes": [
+        {
+          "id": "offerta-promo",
+          "number": 17,
+          "name": "Offerta / Promo",
+          "tags": [
+            "incentivo"
+          ],
+          "description": "Sconto, prezzo o promo come messaggio centrale.",
+          "copy_required": "L'offerta esatta, CTA + eventuale codice",
+          "text_density": "text-heavy",
+          "prompt_template": "Offerta [OFFERTA] grande centrale, codice/scadenza, CTA visibile, palette alto contrasto, formato [FORMATO]"
+        },
+        {
+          "id": "garanzia-risk-reversal",
+          "number": 18,
           "name": "Garanzia / Risk reversal",
-                                  "tags": ["rassicurazione"],
-                                  "description": "Soddisfatto o rimborsato, badge di fiducia.",
-                                  "copy_required": "La promessa di garanzia, condizioni in breve",
-                                  "text_density": "text-heavy",
-                                  "prompt_template": "Badge/scudo garanzia [N_GIORNI] giorni, promessa [PROMESSA] sotto, formato [FORMATO]"
-    },
-                      {
-                                  "id": "urgenza-scarsita",
-                                  "number": 19,
-                                  "name": "Urgenza / Scarsita",
-                                  "tags": ["spinta"],
-                                  "description": "Tempo o stock limitati.",
-                                  "copy_required": "Il limite (tempo/quantita), CTA immediata",
-                                  "text_density": "text-heavy",
-                                  "prompt_template": "Elemento urgenza [LIMITE] evidenza, CTA immediata, palette alto contrasto, formato [FORMATO]"
-                      }
-            ]
+          "tags": [
+            "rassicurazione"
+          ],
+          "description": "Soddisfatto o rimborsato, badge di fiducia.",
+          "copy_required": "La promessa di garanzia, condizioni in breve",
+          "text_density": "text-heavy",
+          "prompt_template": "Badge/scudo garanzia [N_GIORNI] giorni, promessa [PROMESSA] sotto, formato [FORMATO]"
+        },
+        {
+          "id": "urgenza-scarsita",
+          "number": 19,
+          "name": "Urgenza / Scarsita",
+          "tags": [
+            "spinta"
+          ],
+          "description": "Tempo o stock limitati.",
+          "copy_required": "Il limite (tempo/quantita), CTA immediata",
+          "text_density": "text-heavy",
+          "prompt_template": "Elemento urgenza [LIMITE] evidenza, CTA immediata, palette alto contrasto, formato [FORMATO]"
+        }
+      ]
     },
     {
-            "id": "native-contesto",
-            "name": "Native & Contesto",
-            "description": "Statiche che non sembrano pubblicita.",
-            "archetypes": [
-                      {
-                                  "id": "advertorial-editoriale",
-                                  "number": 20,
-                                  "name": "Advertorial / Editoriale",
-                                  "tags": ["native", "storytelling"],
-                                  "description": "Sembra un articolo o una notizia, non un'ad.",
-                                  "copy_required": "Titolo in stile testata, sommario/occhiello",
-                                  "text_density": "text-heavy",
-                                  "prompt_template": "Layout editoriale, titolo [TITOLO_TESTATA], tipografia rivista, formato [FORMATO]"
-    },
+      "id": "native-contesto",
+      "name": "Native & Contesto",
+      "description": "Statiche che non sembrano pubblicita.",
+      "archetypes": [
         {
-                    "id": "lifestyle-aspirazionale",
-                    "number": 21,
-                    "name": "Lifestyle / Aspirazionale",
-                    "tags": ["emotivo", "contesto"],
-                    "description": "Il prodotto nella vita reale, scena desiderabile.",
-                    "copy_required": "Claim emotivo breve, logo discreto",
-                    "text_density": "image-led",
-                    "prompt_template": "Fotografia lifestyle, persona con [PRODOTTO], claim [CLAIM] sovraimpresso, formato [FORMATO]"
+          "id": "advertorial-editoriale",
+          "number": 20,
+          "name": "Advertorial / Editoriale",
+          "tags": [
+            "native",
+            "storytelling"
+          ],
+          "description": "Sembra un articolo o una notizia, non un'ad.",
+          "copy_required": "Titolo in stile testata, sommario/occhiello",
+          "text_density": "text-heavy",
+          "prompt_template": "Layout editoriale, titolo [TITOLO_TESTATA], tipografia rivista, formato [FORMATO]"
         },
         {
-                    "id": "meme-relatable",
-                    "number": 22,
-                    "name": "Meme / Relatable",
-                    "tags": ["emotivo", "viralita"],
-                    "description": "Umorismo o situazione ci si riconosce.",
-                    "copy_required": "Top/bottom text, riferimento riconoscibile",
-                    "text_density": "text-heavy",
-                    "prompt_template": "Formato meme classico, top [TOP_TEXT] bottom [BOTTOM_TEXT], formato [FORMATO]"
+          "id": "lifestyle-aspirazionale",
+          "number": 21,
+          "name": "Lifestyle / Aspirazionale",
+          "tags": [
+            "emotivo",
+            "contesto"
+          ],
+          "description": "Il prodotto nella vita reale, scena desiderabile.",
+          "copy_required": "Claim emotivo breve, logo discreto",
+          "text_density": "image-led",
+          "prompt_template": "Fotografia lifestyle, persona con [PRODOTTO], claim [CLAIM] sovraimpresso, formato [FORMATO]"
         },
         {
-                    "id": "founder-note",
-                    "number": 23,
-                    "name": "Founder Note",
-                    "tags": ["fiducia", "personale"],
-                    "description": "Messaggio personale del fondatore. Bonus oltre i 22 core.",
-                    "copy_required": "Frase personale, firma/foto founder",
-                    "text_density": "text-heavy",
-                    "prompt_template": "Ritratto informale founder, messaggio [MESSAGGIO_FOUNDER], firma, formato [FORMATO]"
+          "id": "meme-relatable",
+          "number": 22,
+          "name": "Meme / Relatable",
+          "tags": [
+            "emotivo",
+            "viralita"
+          ],
+          "description": "Umorismo o situazione ci si riconosce.",
+          "copy_required": "Top/bottom text, riferimento riconoscibile",
+          "text_density": "text-heavy",
+          "prompt_template": "Formato meme classico, top [TOP_TEXT] bottom [BOTTOM_TEXT], formato [FORMATO]"
         },
         {
-                    "id": "flat-lay-unboxing",
-                    "number": 24,
-                    "name": "Flat lay / Unboxing",
-                    "tags": ["desiderio", "tattile"],
-                    "description": "Prodotto + componenti dall'alto. Bonus oltre i 22 core.",
-                    "copy_required": "Eventuale claim, niente o pochissimo testo",
-                    "text_density": "image-led",
-                    "prompt_template": "Flat lay dall'alto [PRODOTTO] e componenti, disposizione ordinata, formato [FORMATO]"
+          "id": "founder-note",
+          "number": 23,
+          "name": "Founder Note",
+          "tags": [
+            "fiducia",
+            "personale"
+          ],
+          "description": "Messaggio personale del fondatore. Bonus oltre i 22 core.",
+          "copy_required": "Frase personale, firma/foto founder",
+          "text_density": "text-heavy",
+          "prompt_template": "Ritratto informale founder, messaggio [MESSAGGIO_FOUNDER], firma, formato [FORMATO]"
+        },
+        {
+          "id": "flat-lay-unboxing",
+          "number": 24,
+          "name": "Flat lay / Unboxing",
+          "tags": [
+            "desiderio",
+            "tattile"
+          ],
+          "description": "Prodotto + componenti dall'alto. Bonus oltre i 22 core.",
+          "copy_required": "Eventuale claim, niente o pochissimo testo",
+          "text_density": "image-led",
+          "prompt_template": "Flat lay dall'alto [PRODOTTO] e componenti, disposizione ordinata, formato [FORMATO]"
         }
-]
-}
-]
+      ]
+    }
+  ]
 }
