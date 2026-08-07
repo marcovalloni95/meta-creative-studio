@@ -1,8 +1,12 @@
 {
   "extracted_at": "2026-08-07",
   "source_url": "https://weddingsummit.it/matrimoney-tour/",
-  "palette": [],
-  "mood": null,
+  "palette": [
+    "#000000",
+    "#ffffff",
+    "#e6b400"
+  ],
+  "mood": "commerciale",
   "visual_type": "fotografico",
   "notes": null,
   "tone": "diretto",
