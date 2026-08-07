@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Image Prompt Tool</title>
+<style>
+  :root{
+    --bg: #121316;
+    --panel: #191b1f;
+    --panel-2: #1f2126;
+    --line: #2a2d33;
+    --text: #e7e7ea;
+    --text-dim: #8a8d94;
+    --accent: #4c7cff;
+    --accent-dim: #2c3f7a;
+    --warn: #e8a33d;
+    --ok: #4caf7c;
+    --mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:960px; margin:0 auto; padding:32px 20px 80px;}
+  header{margin-bottom:32px;}
+  header .eyebrow{
+    font-family:var(--mono); font-size:12px; letter-spacing:.08em;
+    color:var(--accent); text-transform:uppercase; margin-bottom:6px;
+  }
+  h1{font-size:26px; margin:0 0 6px; font-weight:650;}
+  header p{color:var(--text-dim); margin:0; font-size:14px;}
+
+  .step{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:20px 22px; margin-bottom:16px;
+  }
+  .step-head{
+    display:flex; align-items:baseline; gap:10px; margin-bottom:14px;
+  }
+  .step-num{
+    font-family:var(--mono); font-size:12px; color:var(--accent);
+    border:1px solid var(--accent-dim); border-radius:4px; padding:2px 7px;
+  }
+  .step-title{font-size:15px; font-weight:600;}
+  .step-sub{color:var(--text-dim); font-size:12.5px; margin:-8px 0 14px 42px;}
+
+  label{
+    display:block; font-size:12px; color:var(--text-dim); margin-bottom:5px;
+    font-family:var(--mono);
+  }
+  input[type=text], input[type=password], input[type=url], input[type=number], select, textarea{
+    width:100%; background:var(--panel-2); border:1px solid var(--line);
+    color:var(--text); padding:9px 11px; border-radius:6px; font-size:13.5px;
+    font-family:var(--sans); margin-bottom:12px;
+  }
+  textarea{font-family:var(--mono); min-height:90px; resize:vertical;}
+  select{appearance:none; cursor:pointer;}
+  .row{display:flex; gap:12px;}
+  .row > div{flex:1;}
+  .swatchrow{display:flex; gap:8px; align-items:center; margin-bottom:12px;}
+  .swatch{
+    width:26px; height:26px; border-radius:5px; border:1px solid var(--line);
+    flex-shrink:0;
+  }
+
+  button{
+    font-family:var(--sans); font-size:13.5px; font-weight:600;
+    border-radius:6px; padding:9px 16px; cursor:pointer; border:1px solid transparent;
+  }
+  .btn-primary{background:var(--accent); color:#0b0d10;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{background:transparent; border-color:var(--line); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--accent);}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+
+  .status{
+    font-family:var(--mono); font-size:12px; margin-top:8px; min-height:16px;
+  }
+  .status.ok{color:var(--ok);}
+  .status.err{color:#e05a5a;}
+  .status.pending{color:var(--text-dim);}
+
+  .hidden{display:none !important;}
+
+  .console{
+    background:#0c0d10; border:1px solid var(--line); border-radius:8px;
+    padding:16px 18px; font-family:var(--mono); font-size:13px; color:#c9d4ff;
+    white-space:pre-wrap; word-break:break-word; min-height:120px; position:relative;
+  }
+  .console .placeholder{color:var(--text-dim);}
+
+  .actions{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
+
+  .newproj{
+    display:flex; gap:8px; margin-top:-4px; margin-bottom:12px;
+  }
+  .newproj input{margin-bottom:0;}
+
+  .tip{
+    background:var(--panel-2); border:1px solid var(--accent-dim); border-left:3px solid var(--accent);
+    border-radius:6px; padding:10px 13px; font-size:12.5px; color:var(--text-dim);
+    margin-bottom:14px;
+  }
+  .tip b{color:var(--text);}
+
+  .suggest{
+    font-family:var(--mono); font-size:12px; color:var(--ok);
+    margin:-6px 0 14px;
+  }
+
+  .divider{border:none; border-top:1px solid var(--line); margin:18px 0;}
+  .sub-title{font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text);}
+
+  .checklist{font-size:12.5px; color:var(--text-dim); margin:10px 0 0; padding-left:18px;}
+  .checklist li{margin-bottom:4px;}
+
+  footer{color:var(--text-dim); font-size:11.5px; font-family:var(--mono); text-align:center; margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Meta Creative Studio</div>
+    <h1>AI Image Prompt Tool</h1>
+    <p>Da un copy Meta Ads a un prompt immagine strutturato (Ruolo + Contesto + Task + Negative) — dati letti e salvati direttamente su GitHub.</p>
+  </header>
+
+  <!-- STEP 1: connessione -->
+  <div class="step">
+    <div class="step-head">
+      <span class="step-num">01</span>
+      <span class="step-title">Connessione</span>
+    </div>
+    <div class="step-sub">Serve un Personal Access Token GitHub (repo scope) — resta salvato solo nel tuo browser.</div>
+    <div class="row">
+      <div>
+        <label for="ghToken">GitHub token</label>
+        <input type="password" id="ghToken" placeholder="ghp_...">
+      </div>
+      <div>
+        <label for="ghRepo">Repository</label>
+        <input type="text" id="ghRepo" value="marcovalloni95/meta-creative-studio">
+      </div>
+    </div>
+    <button class="btn-primary" id="btnConnect">Connetti</button>
+    <div class="status pending" id="connectStatus">Non connesso.</div>
+  </div>
+
+  <div id="afterConnect" class="hidden">
+
+    <!-- STEP 2: cliente/progetto -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-num">02</span>
+        <span class="step-title">Cliente & progetto</span>
+      </div>
+      <div class="row">
+        <div>
+          <label for="selClient">Cliente</label>
+          <select id="selClient"></select>
+        </div>
+        <div>
+          <label for="selProject">Progetto</label>
+          <select id="selProject"></select>
+        </div>
+      </div>
+      <div class="newproj">
+        <input type="text" id="newClientId" placeholder="nuovo-cliente (slug)">
+        <input type="text" id="newProjectId" placeholder="nuovo-progetto (slug)">
+        <button class="btn-ghost" id="btnNewProject">+ Crea progetto</button>
+      </div>
+      <label for="landingUrl">Landing page del cliente</label>
+      <input type="url" id="landingUrl" placeholder="https://...">
+      <button class="btn-ghost" id="btnSaveConfig">Salva config progetto</button>
+      <div class="status pending" id="configStatus"></div>
+    </div>
+
+    <!-- STEP 3: stile da screenshot -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-num">03</span>
+        <span class="step-title">Stile visivo (da screenshot)</span>
+      </div>
+      <div class="step-sub">Carica uno screenshot della landing assegnata sopra: Claude estrae palette, mood e tono. Fallo una volta per progetto — resta salvato e viene riusato ad ogni generazione. Puoi correggere i campi prima di salvare.</div>
+      <div class="row">
+        <div>
+          <label for="anthropicKey">Chiave API Anthropic</label>
+          <input type="password" id="anthropicKey" placeholder="sk-ant-...">
+        </div>
+        <div>
+          <label for="anthropicModel">Modello</label>
+          <input type="text" id="anthropicModel" placeholder="es. claude-sonnet-4-5 (verifica su docs.claude.com)">
+        </div>
+      </div>
+      <label for="screenshotInput">Screenshot della landing</label>
+      <input type="file" id="screenshotInput" accept="image/*">
+      <hr class="divider">
+      <div class="row">
+        <div>
+          <label for="brandTone">Tono di voce</label>
+          <input type="text" id="brandTone" placeholder="es. diretto e aspirazionale">
+        </div>
+        <div>
+          <label for="brandTarget">Target</label>
+          <input type="text" id="brandTarget" placeholder="es. donne 25-40 appassionate di moda">
+        </div>
+      </div>
+      <label for="stylePalette">Palette (colori hex separati da virgola)</label>
+      <input type="text" id="stylePalette" placeholder="#1A1A1A, #C9A96E, #F5F0E8">
+      <div class="swatchrow" id="swatchPreview"></div>
+      <label for="styleMood">Mood / stile</label>
+      <input type="text" id="styleMood" placeholder="editoriale, minimal, materiali preziosi in primo piano">
+      <div class="row">
+        <div>
+          <label for="styleVisualType">Tipo visivo</label>
+          <select id="styleVisualType">
+            <option value="fotografico">fotografico</option>
+            <option value="tipografico">tipografico</option>
+            <option value="ibrido">ibrido</option>
+          </select>
+        </div>
+      </div>
+      <label for="styleNotes">Note aggiuntive</label>
+      <input type="text" id="styleNotes" placeholder="es. forte uso di macro shot su dettagli">
+      <button class="btn-ghost" id="btnSaveStyle">Salva stile</button>
+      <div class="status pending" id="styleStatus"></div>
+    </div>
+
+    <!-- STEP 4: copy + archetipo -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-num">04</span>
+        <span class="step-title">Copy & archetipo (Task)</span>
+      </div>
+      <label for="copyText">Contesto comunicativo (non il copy letterale)</label>
+      <div class="step-sub" style="margin:-8px 0 12px 0;">Messaggio, angolo, trigger, benefici, soluzione, CTA — tutto ciò che l'immagine deve comunicare. Claude userà questo contesto per scegliere quali elementi mostrare, seguendo sempre la struttura della famiglia/archetipo scelti qui sotto.</div>
+      <textarea id="copyText" placeholder="Es: target che soffre di X, angolo Y, trigger emotivo Z, beneficio principale..., soluzione..., CTA..."></textarea>
+      <div class="row">
+        <div>
+          <label for="creativeAngle">Angolo</label>
+          <input type="text" id="creativeAngle" placeholder="es. riprova sociale, dolore, dimostrazione prodotto...">
+        </div>
+        <div>
+          <label for="selAwareness">Livello di consapevolezza (Schwartz)</label>
+          <select id="selAwareness">
+            <option value="unaware">Unaware</option>
+            <option value="problem_aware">Problem Aware</option>
+            <option value="solution_aware">Solution Aware</option>
+            <option value="product_aware">Product Aware</option>
+            <option value="most_aware">Most Aware</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="selObjective">Obiettivo</label>
+          <select id="selObjective">
+            <option value="performance">Performance advertising</option>
+            <option value="organic">Brand & organico</option>
+          </select>
+        </div>
+        <div>
+          <label for="selFormat">Formato</label>
+          <select id="selFormat">
+            <option value="1:1">1:1</option>
+            <option value="4:5">4:5</option>
+            <option value="9:16">9:16</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="selFamily">Famiglia</label>
+          <select id="selFamily"></select>
+        </div>
+        <div>
+          <label for="selArchetype">Archetipo</label>
+          <select id="selArchetype"></select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="selModel">Modello di generazione</label>
+          <select id="selModel">
+            <option value="Gemini (Nano Banana)">Gemini (Nano Banana)</option>
+            <option value="GPT Image">GPT Image</option>
+            <option value="Midjourney">Midjourney</option>
+            <option value="Ideogram">Ideogram</option>
+            <option value="Flux / Firefly">Flux / Firefly</option>
+          </select>
+        </div>
+      </div>
+      <div class="suggest" id="toolSuggest"></div>
+    </div>
+
+    <!-- STEP 5: generazione -->
+    <div class="step">
+      <div class="step-head">
+        <span class="step-num">05</span>
+        <span class="step-title">Generazione prompt (Ruolo + Negative)</span>
+      </div>
+      <div class="tip">
+        <b>Come nel workshop:</b> il prompt migliore non è un template compilato a metà, è generato da un'AI a partire da un master prompt con Ruolo, Contesto, Task e Negative. Usa la chiave API Anthropic impostata nello step 03: il prompt viene scritto da Claude in inglese, con headline/CTA in italiano pronte da inserire nell'immagine. Senza chiave, il tool costruisce comunque un prompt strutturato (via fallback), ma meno rifinito.
+      </div>
+      <hr class="divider">
+      <div class="console" id="promptOutput"><span class="placeholder">Compila copy, famiglia e archetipo, poi genera il prompt...</span></div>
+      <div class="actions">
+        <button class="btn-primary" id="btnGenerate">Genera prompt</button>
+        <button class="btn-ghost" id="btnCopy">Copia</button>
+        <button class="btn-ghost" id="btnSavePrompt">Salva nello storico</button>
+      </div>
+      <div class="status pending" id="promptStatus"></div>
+      <ul class="checklist">
+        <li>Testo sull'immagine: se puoi togliere una parola, toglila</li>
+        <li>Una sola CTA, un solo elemento protagonista</li>
+        <li>Prima di pubblicare: test con occhio fresco, zoom-out a misura mobile</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>ai-image-prompt-tool · dati salvati direttamente su GitHub, nessun server intermedio</footer>
+</div>
+
+<script>
+const state = {
+  token: null,
+  repo: null,
+  library: null,
+  clients: {},
+  currentClient: null,
+  currentProject: null,
+  currentStyleSha: null,
+  currentConfigSha: null,
+};
+
+const $ = (id) => document.getElementById(id);
+
+function setStatus(el, msg, kind){
+  el.textContent = msg;
+  el.className = 'status ' + (kind || 'pending');
+}
+
+// ---------- GitHub API helpers ----------
+async function ghRequest(path, opts={}){
+  const res = await fetch(`https://api.github.com/repos/${state.repo}/${path}`, {
+    ...opts,
+    headers: {
+      'Authorization': `Bearer ${state.token}`,
+      'Accept': 'application/vnd.github+json',
+      ...(opts.headers || {})
+    }
+  });
+  return res;
+}
+
+async function ghGetFile(path){
+  const res = await ghRequest(`contents/${path}`);
+  if(res.status === 404) return null;
+  if(!res.ok) throw new Error(`GET ${path} -> ${res.status}`);
+  const data = await res.json();
+  const content = decodeURIComponent(escape(atob(data.content)));
+  return { content: JSON.parse(content), sha: data.sha };
+}
+
+async function ghPutFile(path, obj, sha, message){
+  const body = {
+    message: message || `Update ${path}`,
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2)))),
+    branch: 'main'
+  };
+  if(sha) body.sha = sha;
+  const res = await ghRequest(`contents/${path}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.message || `PUT ${path} -> ${res.status}`);
+  }
+  return res.json();
+}
+
+async function ghListTree(){
+  const res = await ghRequest(`git/trees/main?recursive=1`);
+  if(!res.ok) throw new Error(`tree -> ${res.status}`);
+  const data = await res.json();
+  return data.tree;
+}
+
+// ---------- Step 1: connect ----------
+$('btnConnect').addEventListener('click', async () => {
+  const token = $('ghToken').value.trim();
+  const repo = $('ghRepo').value.trim();
+  if(!token || !repo){
+    setStatus($('connectStatus'), 'Inserisci token e repository.', 'err');
+    return;
+  }
+  state.token = token;
+  state.repo = repo;
+  setStatus($('connectStatus'), 'Connessione in corso...', 'pending');
+  try{
+    const tree = await ghListTree();
+    localStorage.setItem('aipt_token', token);
+    localStorage.setItem('aipt_repo', repo);
+
+    const lib = await ghGetFile('archetypes/library.json');
+    if(!lib) throw new Error('archetypes/library.json non trovato nel repo');
+    state.library = lib.content;
+    populateFamilies();
+
+    state.clients = {};
+    tree.filter(n => n.type === 'blob' && n.path.startsWith('clients/') && n.path.endsWith('config.json'))
+      .forEach(n => {
+        const parts = n.path.split('/');
+        const clientId = parts[1], projectId = parts[2];
+        if(!state.clients[clientId]) state.clients[clientId] = [];
+        state.clients[clientId].push(projectId);
+      });
+    populateClients();
+
+    setStatus($('connectStatus'), `Connesso a ${repo}.`, 'ok');
+    $('afterConnect').classList.remove('hidden');
+  }catch(e){
+    setStatus($('connectStatus'), 'Errore: ' + e.message, 'err');
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  const t = localStorage.getItem('aipt_token');
+  const r = localStorage.getItem('aipt_repo');
+  const ak = localStorage.getItem('aipt_anthropic_key');
+  const am = localStorage.getItem('aipt_anthropic_model');
+  if(t) $('ghToken').value = t;
+  if(r) $('ghRepo').value = r;
+  if(ak) $('anthropicKey').value = ak;
+  if(am) $('anthropicModel').value = am;
+  updateToolSuggest();
+});
+
+$('anthropicKey').addEventListener('change', () => localStorage.setItem('aipt_anthropic_key', $('anthropicKey').value.trim()));
+$('anthropicModel').addEventListener('change', () => localStorage.setItem('aipt_anthropic_model', $('anthropicModel').value.trim()));
+
+// ---------- Step 2: client/project ----------
+function populateClients(){
+  const sel = $('selClient');
+  sel.innerHTML = '';
+  Object.keys(state.clients).sort().forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  if(sel.options.length){
+    sel.selectedIndex = 0;
+    populateProjects();
+  }
+}
+
+function populateProjects(){
+  const client = $('selClient').value;
+  const sel = $('selProject');
+  sel.innerHTML = '';
+  (state.clients[client] || []).sort().forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p; opt.textContent = p;
+    sel.appendChild(opt);
+  });
+  if(sel.options.length){
+    sel.selectedIndex = 0;
+    loadProject();
+  }
+}
+
+$('selClient').addEventListener('change', populateProjects);
+$('selProject').addEventListener('change', loadProject);
+
+async function loadProject(){
+  const client = $('selClient').value;
+  const project = $('selProject').value;
+  if(!client || !project) return;
+  state.currentClient = client;
+  state.currentProject = project;
+
+  try{
+    const cfg = await ghGetFile(`clients/${client}/${project}/config.json`);
+    if(cfg){
+      $('landingUrl').value = cfg.content.landing_url || '';
+      state.currentConfigSha = cfg.sha;
+    }
+    const style = await ghGetFile(`clients/${client}/${project}/style.json`);
+    if(style){
+      $('stylePalette').value = (style.content.palette || []).join(', ');
+      $('styleMood').value = style.content.mood || '';
+      $('styleVisualType').value = style.content.visual_type || 'fotografico';
+      $('styleNotes').value = style.content.notes || '';
+      $('brandTone').value = style.content.tone || '';
+      $('brandTarget').value = style.content.target || '';
+      state.currentStyleSha = style.sha;
+      renderSwatches();
+    }
+  }catch(e){
+    console.error(e);
+  }
+}
+
+$('btnNewProject').addEventListener('click', async () => {
+  const clientId = $('newClientId').value.trim();
+  const projectId = $('newProjectId').value.trim();
+  if(!clientId || !projectId){
+    setStatus($('configStatus'), 'Inserisci slug cliente e progetto.', 'err');
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  const config = {
+    client: clientId, project: projectId,
+    landing_url: '', default_model: 'gemini',
+    formats: ['1:1','9:16'], created_at: today, updated_at: today
+  };
+  const style = { extracted_at: null, source_url: null, palette: [], mood: null, visual_type: null, notes: null, tone: null, target: null };
+  try{
+    await ghPutFile(`clients/${clientId}/${projectId}/config.json`, config, null, `Crea progetto ${clientId}/${projectId}`);
+    await ghPutFile(`clients/${clientId}/${projectId}/style.json`, style, null, `Crea style.json ${clientId}/${projectId}`);
+    if(!state.clients[clientId]) state.clients[clientId] = [];
+    state.clients[clientId].push(projectId);
+    populateClients();
+    $('selClient').value = clientId;
+    populateProjects();
+    $('selProject').value = projectId;
+    loadProject();
+    setStatus($('configStatus'), 'Progetto creato.', 'ok');
+    $('newClientId').value = ''; $('newProjectId').value = '';
+  }catch(e){
+    setStatus($('configStatus'), 'Errore: ' + e.message, 'err');
+  }
+});
+
+$('btnSaveConfig').addEventListener('click', async () => {
+  const client = state.currentClient, project = state.currentProject;
+  if(!client || !project) return;
+  const today = new Date().toISOString().slice(0,10);
+  const cfg = await ghGetFile(`clients/${client}/${project}/config.json`);
+  const updated = { ...(cfg ? cfg.content : {}), landing_url: $('landingUrl').value.trim(), updated_at: today };
+  try{
+    const res = await ghPutFile(`clients/${client}/${project}/config.json`, updated, cfg ? cfg.sha : null, `Aggiorna config ${client}/${project}`);
+    state.currentConfigSha = res.content.sha;
+    setStatus($('configStatus'), 'Config salvata.', 'ok');
+  }catch(e){
+    setStatus($('configStatus'), 'Errore: ' + e.message, 'err');
+  }
+});
+
+// ---------- Step 3: style (estratto da screenshot via Claude vision) ----------
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function extractStyleFromScreenshot(file){
+  const apiKey = $('anthropicKey').value.trim();
+  const model = $('anthropicModel').value.trim() || 'claude-sonnet-4-5';
+  if(!apiKey){
+    setStatus($('styleStatus'), 'Serve una chiave API Anthropic (qui sopra) per analizzare lo screenshot.', 'err');
+    return;
+  }
+  setStatus($('styleStatus'), 'Analisi screenshot in corso...', 'pending');
+  try{
+    const base64 = await fileToBase64(file);
+    const mediaType = file.type || 'image/png';
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 500,
+        system: 'Rispondi SOLO con un oggetto JSON valido, senza testo prima o dopo, senza blocchi markdown. Struttura esatta: {"palette":["#HEX", "#HEX"],"mood":"...","visual_type":"fotografico|tipografico|ibrido","tone":"...","target":"...","notes":"..."}. Scrivi i valori testuali in italiano.',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: "Analizza questo screenshot di una landing page e restituisci: palette colori dominante (max 5 hex), mood/stile visivo, tipo visivo prevalente (fotografico/tipografico/ibrido), tono di voce percepito del brand, target probabile, eventuali note utili per generare creatività pubblicitarie coerenti con questo brand." }
+          ]
+        }]
+      })
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error((err.error && err.error.message) || `Anthropic API -> ${res.status}`);
+    }
+    const data = await res.json();
+    const raw = data.content.map(b => b.text || '').join('').trim();
+    const cleaned = raw.replace(/^```json\s*|```$/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    $('stylePalette').value = (parsed.palette || []).join(', ');
+    $('styleMood').value = parsed.mood || '';
+    $('styleVisualType').value = parsed.visual_type || 'fotografico';
+    $('styleNotes').value = parsed.notes || '';
+    $('brandTone').value = parsed.tone || '';
+    $('brandTarget').value = parsed.target || '';
+    renderSwatches();
+    setStatus($('styleStatus'), 'Stile estratto dallo screenshot. Controlla e correggi se serve, poi salva.', 'ok');
+  }catch(e){
+    setStatus($('styleStatus'), 'Errore estrazione: ' + e.message, 'err');
+  }
+}
+
+$('screenshotInput').addEventListener('change', () => {
+  const file = $('screenshotInput').files[0];
+  if(file) extractStyleFromScreenshot(file);
+});
+
+function renderSwatches(){
+  const box = $('swatchPreview');
+  box.innerHTML = '';
+  $('stylePalette').value.split(',').map(s=>s.trim()).filter(Boolean).forEach(hex=>{
+    const sw = document.createElement('div');
+    sw.className = 'swatch';
+    sw.style.background = /^#[0-9a-fA-F]{3,8}$/.test(hex) ? hex : '#333';
+    sw.title = hex;
+    box.appendChild(sw);
+  });
+}
+$('stylePalette').addEventListener('input', renderSwatches);
+
+$('btnSaveStyle').addEventListener('click', async () => {
+  const client = state.currentClient, project = state.currentProject;
+  if(!client || !project) return;
+  const style = {
+    extracted_at: new Date().toISOString().slice(0,10),
+    source_url: $('landingUrl').value.trim() || null,
+    palette: $('stylePalette').value.split(',').map(s=>s.trim()).filter(Boolean),
+    mood: $('styleMood').value.trim() || null,
+    visual_type: $('styleVisualType').value,
+    notes: $('styleNotes').value.trim() || null,
+    tone: $('brandTone').value.trim() || null,
+    target: $('brandTarget').value.trim() || null
+  };
+  try{
+    const res = await ghPutFile(`clients/${client}/${project}/style.json`, style, state.currentStyleSha, `Aggiorna stile ${client}/${project}`);
+    state.currentStyleSha = res.content.sha;
+    setStatus($('styleStatus'), 'Stile salvato.', 'ok');
+  }catch(e){
+    setStatus($('styleStatus'), 'Errore: ' + e.message, 'err');
+  }
+});
+
+// ---------- Step 4: family/archetype/objective ----------
+function populateFamilies(){
+  const sel = $('selFamily');
+  sel.innerHTML = '';
+  state.library.families.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.id; opt.textContent = f.name;
+    sel.appendChild(opt);
+  });
+  populateArchetypes();
+}
+function populateArchetypes(){
+  const famId = $('selFamily').value;
+  const fam = state.library.families.find(f => f.id === famId);
+  const sel = $('selArchetype');
+  sel.innerHTML = '';
+  (fam ? fam.archetypes : []).forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a.id; opt.textContent = `${a.number}. ${a.name}`;
+    sel.appendChild(opt);
+  });
+  updateToolSuggest();
+}
+$('selFamily').addEventListener('change', populateArchetypes);
+$('selArchetype').addEventListener('change', updateToolSuggest);
+$('selObjective').addEventListener('change', updateToolSuggest);
+
+// Suggerimento tool basato sulla tabella "I tool per generare immagini con AI" del workshop
+function updateToolSuggest(){
+  const arch = currentArchetype();
+  const objective = $('selObjective') ? $('selObjective').value : 'performance';
+  const box = $('toolSuggest');
+  if(!box) return;
+  if(!arch){ box.textContent = ''; return; }
+
+  let suggestion = '';
+  if(objective === 'performance'){
+    if(arch.text_density === 'text-heavy' && (arch.family_hint !== 'native')) {
+      suggestion = "Ideogram — testo leggibile integrato nell'immagine";
+    } else if(['product-hero','feature-callout','before-after'].includes(arch.id)){
+      suggestion = 'GPT Image — coerenza visiva prodotto + contesto lifestyle';
+    } else {
+      suggestion = 'Nano Banana o Canva AI — varianti rapide per A/B test';
+    }
+  } else {
+    if(['lifestyle-aspirazionale','meme-relatable','founder-note'].includes(arch.id)){
+      suggestion = 'Midjourney — qualità artistica per contenuti organici';
+    } else if(['product-hero','flat-lay-unboxing'].includes(arch.id)){
+      suggestion = 'Flux / Firefly — realismo fotografico su sfondo neutro';
+    } else if(arch.text_density === 'text-heavy'){
+      suggestion = 'Ideogram v3 — testo ultra-preciso per copy integrato lungo';
+    } else {
+      suggestion = 'GPT Image — asset coerenti con la KB del brand';
+    }
+  }
+  box.textContent = '→ Consiglio dal workshop: ' + suggestion;
+}
+
+function currentArchetype(){
+  if(!state.library) return null;
+  const famId = $('selFamily').value;
+  const fam = state.library.families.find(f => f.id === famId);
+  if(!fam) return null;
+  return fam.archetypes.find(a => a.id === $('selArchetype').value);
+}
+
+// ---------- Step 5: prompt generation ----------
+const UNIVERSAL_NEGATIVES = [
+  'testo distorto o illeggibile',
+  'bassa risoluzione',
+  'mani o volti deformi',
+  'watermark',
+  'loghi non richiesti',
+  'aspetto da stock photo generica'
+];
+
+function buildMasterPrompt(){
+  const arch = currentArchetype();
+  const fam = state.library.families.find(f => f.archetypes.some(a => a.id === arch.id));
+  const client = state.currentClient || '(cliente)';
+  const project = state.currentProject || '(progetto)';
+  const palette = $('stylePalette').value.trim() || '(non impostata)';
+  const mood = $('styleMood').value.trim() || '(non impostato)';
+  const visualType = $('styleVisualType').value;
+  const tone = $('brandTone').value.trim() || '(non impostato)';
+  const target = $('brandTarget').value.trim() || '(non impostato)';
+  const format = $('selFormat').value;
+  const model = $('selModel').value;
+  const copy = $('copyText').value.trim();
+  const angle = $('creativeAngle').value.trim() || '(non impostato)';
+  const awarenessLabels = { unaware: 'Unaware', problem_aware: 'Problem Aware', solution_aware: 'Solution Aware', product_aware: 'Product Aware', most_aware: 'Most Aware' };
+  const awareness = awarenessLabels[$('selAwareness').value] || $('selAwareness').value;
+
+  const negatives = UNIVERSAL_NEGATIVES.concat(arch.dont ? [arch.dont] : []);
+
+  return `Sei un art director specializzato in advertising, esperto nella scrittura di prompt per modelli di generazione immagine AI (${model}).
+
+CONTESTO
+- Brand/cliente: ${client} (progetto: ${project})
+- Tono di voce: ${tone}
+- Target: ${target}
+- Palette colori: ${palette}
+- Mood/stile: ${mood}
+- Tipo visivo: ${visualType}
+- Angolo: ${angle}
+- Livello di consapevolezza (Schwartz): ${awareness}
+
+ARCHETIPO CREATIVO (dal Manuale delle Statiche)
+- Famiglia: ${fam.name}
+- Archetipo: ${arch.name} — ${arch.description}
+- Cosa deve contenere: ${arch.copy_required}
+- Fai: ${arch.do}
+- Non fare: ${arch.dont}
+
+CONTESTO COMUNICATIVO (messaggio, angolo, trigger, benefici, soluzione, CTA — NON è testo letterale da copiare: usalo per capire quali elementi mostrare nell'immagine)
+"""
+${copy || '(nessun contesto fornito)'}
+"""
+
+TASK
+1. Guarda "Cosa deve contenere" e "Fai/Non fare" dell'archetipo scelto sopra: è quella struttura a decidere quali elementi vanno nell'immagine (testo, prodotto, scena, dettaglio...), NON uno schema fisso headline+sub+CTA. Alcuni archetipi sono puramente visivi senza testo in scena, altri sono text-heavy: rispetta sempre l'archetipo.
+2. Dal CONTESTO COMUNICATIVO, scegli SOLO gli elementi (messaggio, hook, numero, beneficio, CTA...) richiesti da quella struttura, ed eventuale testo da renderizzare scrivilo in ITALIANO. Calibra tono e hook sul livello di consapevolezza indicato (es. Problem Aware → enfasi sul dolore, non sul prodotto; Most Aware → CTA diretta).
+3. Scrivi il prompt di generazione immagine per ${model}, formato ${format}, che traduca copy e archetipo in una descrizione visiva precisa: soggetto, ambientazione, inquadratura, luce, palette, stile fotografico o tipografico secondo l'archetipo scelto. Se l'archetipo prevede testo in scena, riporta tra virgolette il testo esatto in italiano, con posizione e peso visivo coerenti alla gerarchia indicata dall'archetipo. Se l'archetipo è tipografico, descrivi la composizione testuale (gerarchia, posizione, font suggerito) invece di una scena fotografica.
+
+FORMATO OUTPUT
+- Scrivi il prompt in inglese (standard per i modelli di generazione immagine), MA riporta tra virgolette l'eventuale testo esatto in italiano da inserire nell'immagine
+- Massimo 180 parole
+- Restituisci SOLO il prompt finale, nessuna spiegazione, nessun preambolo
+
+NEGATIVE (includi sempre, tradotto in inglese, in fondo al prompt)
+${negatives.map(n => '- ' + n).join('\n')}`;
+}
+
+function buildFallbackPrompt(){
+  const arch = currentArchetype();
+  const fam = state.library.families.find(f => f.archetypes.some(a => a.id === arch.id));
+  const palette = $('stylePalette').value.trim() || '(palette non impostata)';
+  const mood = $('styleMood').value.trim() || '(mood non impostato)';
+  const tone = $('brandTone').value.trim();
+  const target = $('brandTarget').value.trim();
+  const format = $('selFormat').value;
+  const model = $('selModel').value;
+  const copy = $('copyText').value.trim();
+  const angle = $('creativeAngle').value.trim();
+  const awarenessLabels = { unaware: 'Unaware', problem_aware: 'Problem Aware', solution_aware: 'Solution Aware', product_aware: 'Product Aware', most_aware: 'Most Aware' };
+  const awareness = awarenessLabels[$('selAwareness').value] || $('selAwareness').value;
+  const negatives = UNIVERSAL_NEGATIVES.concat(arch.dont ? [arch.dont] : []);
+
+  let out = `RUOLO
+Art director specializzato in advertising, per il modello ${model}.
+
+`;
+  out += `CONTESTO
+Tono: ${tone || '(non impostato)'} · Target: ${target || '(non impostato)'} · Palette: ${palette} · Mood: ${mood}${angle ? ` · Angolo: ${angle}` : ''} · Consapevolezza: ${awareness}
+
+`;
+  out += `TASK (archetipo: ${fam.name} → ${arch.name})
+${arch.prompt_template.replaceAll('[FORMATO]', format).replaceAll('[PALETTE_PRIMARIA]', palette.split(',')[0]?.trim() || palette).replaceAll('[PALETTE]', palette).replaceAll('[MOOD]', mood)}
+
+`;
+  if(copy){
+    out += `CONTESTO COMUNICATIVO (messaggio, angolo, trigger, benefici, soluzione, CTA — usalo per scegliere quali elementi mostrare, seguendo la struttura dell'archetipo sopra; eventuale testo in scena va in italiano)
+${copy}
+
+`;
+  }
+  out += `NOTA: gli elementi da mostrare nell'immagine (testo, prodotto, scena...) li decide l'archetipo sopra, non uno schema fisso — non tutti gli archetipi prevedono headline/CTA in scena.
+
+`;
+  out += `NEGATIVE
+${negatives.map(n => '- ' + n).join('\n')}`;
+  return out;
+}
+
+async function callClaude(apiKey, model, userPrompt){
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: model,
+      max_tokens: 500,
+      messages: [{ role: 'user', content: userPrompt }]
+    })
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({}));
+    throw new Error((err.error && err.error.message) || `Anthropic API -> ${res.status}`);
+  }
+  const data = await res.json();
+  return data.content.map(b => b.text || '').join('').trim();
+}
+
+$('btnGenerate').addEventListener('click', async () => {
+  const arch = currentArchetype();
+  const box = $('promptOutput');
+  if(!arch){
+    box.innerHTML = '<span class="placeholder">Seleziona famiglia e archetipo.</span>';
+    return;
+  }
+  const apiKey = $('anthropicKey').value.trim();
+  const model = $('anthropicModel').value.trim();
+
+  if(apiKey && model){
+    setStatus($('promptStatus'), 'Generazione con Claude in corso...', 'pending');
+    box.textContent = '...';
+    try{
+      const master = buildMasterPrompt();
+      const result = await callClaude(apiKey, model, master);
+      box.textContent = result;
+      setStatus($('promptStatus'), 'Prompt generato da Claude.', 'ok');
+    }catch(e){
+      setStatus($('promptStatus'), 'Errore Claude: ' + e.message + ' — uso il fallback.', 'err');
+      box.textContent = buildFallbackPrompt();
+    }
+  } else {
+    box.textContent = buildFallbackPrompt();
+    setStatus($('promptStatus'), 'Prompt strutturato generato (fallback, senza AI — inserisci una chiave Anthropic per un risultato rifinito in inglese).', 'pending');
+  }
+});
+
+$('btnCopy').addEventListener('click', () => {
+  const text = $('promptOutput').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    setStatus($('promptStatus'), 'Copiato negli appunti.', 'ok');
+  });
+});
+
+$('btnSavePrompt').addEventListener('click', async () => {
+  const client = state.currentClient, project = state.currentProject;
+  const arch = currentArchetype();
+  if(!client || !project || !arch){
+    setStatus($('promptStatus'), 'Seleziona progetto e archetipo prima di salvare.', 'err');
+    return;
+  }
+  const promptText = $('promptOutput').textContent;
+  if(!promptText || promptText.includes('Compila copy')){
+    setStatus($('promptStatus'), 'Genera il prompt prima di salvarlo.', 'err');
+    return;
+  }
+  const now = new Date();
+  const id = now.toISOString().replace(/[:.]/g,'-');
+  const famId = $('selFamily').value;
+  const fam = state.library.families.find(f => f.id === famId);
+  const record = {
+    id,
+    created_at: now.toISOString(),
+    copy_source: $('copyText').value.trim(),
+    archetype: { family: fam.name, name: arch.name },
+    angle: $('creativeAngle').value.trim(),
+    awareness_level: $('selAwareness').value,
+    format: $('selFormat').value,
+    model: $('selModel').value,
+    objective: $('selObjective').value,
+    prompt_output: promptText,
+    performance_note: null
+  };
+  try{
+    await ghPutFile(`clients/${client}/${project}/prompts/${id}.json`, record, null, `Nuovo prompt ${arch.name} (${client}/${project})`);
+    setStatus($('promptStatus'), 'Prompt salvato nello storico del progetto.', 'ok');
+  }catch(e){
+    setStatus($('promptStatus'), 'Errore: ' + e.message, 'err');
+  }
+});
+</script>
+</body>
+</html>
