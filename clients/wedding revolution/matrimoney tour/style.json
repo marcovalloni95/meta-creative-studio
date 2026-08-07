@@ -1,10 +1,14 @@
 {
-  "extracted_at": null,
-  "source_url": null,
-  "palette": [],
-  "mood": null,
-  "visual_type": null,
+  "extracted_at": "2026-08-07",
+  "source_url": "https://weddingsummit.it/matrimoney-tour/",
+  "palette": [
+    "#000000",
+    "#e6b400",
+    "#ffffff"
+  ],
+  "mood": "contenuto organico da feed",
+  "visual_type": "ibrido",
   "notes": null,
-  "tone": null,
-  "target": null
+  "tone": "diretto",
+  "target": "titolari di location per matrimoni"
 }
